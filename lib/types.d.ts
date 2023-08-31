@@ -4,6 +4,7 @@ export type MageModule = {
   fqn: string;
   relativePath?: string;
   version?: string;
+  enabled?: boolean;
 }
 
 export type MagePlugin = {

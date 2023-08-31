@@ -1,5 +1,6 @@
-const engine = require('php-parser');
+import engine from 'php-parser';
 
+// @ts-ignore
 const parser = new engine({
   parser: {
     extractDoc: false,

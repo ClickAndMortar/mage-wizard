@@ -4,7 +4,14 @@
   </v-card>
   <v-card class="mt-4" elevation="3">
     <v-card-text>
-      All the modules
+      <v-data-table
+        density="compact"
+        :headers="headers"
+        :items="modules"
+        v-model:items-per-page="itemsPerPage"
+        :loading="pending"
+      >
+      </v-data-table>
     </v-card-text>
   </v-card>
 </template>
@@ -12,4 +19,14 @@
 useHead({
   title: 'Modules',
 })
+
+const { data: modules, pending } = await useFetch('/api/modules')
+
+const itemsPerPage = 50
+
+const headers = [
+  { title: 'Namespace', align: 'start', key: 'namespace' },
+  { title: 'Name', align: 'start', key: 'name' },
+  { title: 'Version', align: 'start', key: 'version' },
+]
 </script>

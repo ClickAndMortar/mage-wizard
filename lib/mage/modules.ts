@@ -1,47 +1,72 @@
 import {MageModule, MagePlugin} from '../types';
-const jsonpath = require('jsonpath');
-const fs = require('fs');
 import parser from '../php-parser-engine'
 import generateComposerJson from '../generator/module-composer-json'
 import generateRegistrationPhp from '../generator/module-registration-php'
 import {XMLParser} from 'fast-xml-parser';
+import jsonpath from 'jsonpath';
+import fs from 'fs';
+import useMageRoot from '~/composables/use-mage-root';
+import fg from 'fast-glob';
 
 const basePath = useMageRoot();
 
-const getModules = (): MageModule[] => {
-  const configPhp = fs.readFileSync(`${basePath}/etc/config.php`, 'utf8');
-  const ast = parser.parseCode(configPhp);
+let allModules: MageModule[] = [];
 
-  const moduleNames = jsonpath.query(ast, '$.children[?(@.kind=="return")].expr.items[?(@.key.value=="modules")].value.items[?(@.value.value=="1")].key.value');
-
+const loadModules = (): void => {
   const modules: MageModule[] = [];
 
-  for (const moduleName of moduleNames) {
-    const namespace = moduleName.split('_')[0];
-    const module = moduleName.split('_')[1];
-    const relativePath = `code/${namespace}/${module}`;
-    const composerJsonPath = `${basePath}/${relativePath}/composer.json`;
-    const composerJson = JSON.parse(fs.readFileSync(composerJsonPath, 'utf8'));
-    const version = composerJson.version;
-    modules.push({
-      name: moduleName,
-      namespace: namespace,
-      fqn: `${namespace}_${module}`,
-      relativePath: relativePath,
-      version: version,
+  const configPhp = fs.readFileSync(`${basePath}/app/etc/config.php`, 'utf8');
+  const ast = parser.parseCode(configPhp);
+
+  const enabledModuleNames = jsonpath.query(ast, '$.children[?(@.kind=="return")].expr.items[?(@.key.value=="modules")].value.items[?(@.value.value=="1")].key.value');
+
+  const moduleXmlFiles = fg.sync([
+    basePath + '/app/code/**/etc/module.xml',
+    basePath + '/vendor/**/etc/module.xml',
+  ], {
+    ignore: ['**/dev/tests/**']
+  });
+  for (const moduleXmlFile of moduleXmlFiles) {
+    const parser = new XMLParser({
+      ignoreAttributes: false,
     });
+
+    const moduleXml = parser.parse(fs.readFileSync(moduleXmlFile, 'utf8'));
+    if (moduleXml.config?.module) {
+      const module: MageModule = {
+        name: moduleXml.config.module['@_name'].split('_')[1],
+        namespace: moduleXml.config.module['@_name'].split('_')[0],
+        fqn: moduleXml.config.module['@_name'],
+        relativePath: moduleXmlFile.replace(`${basePath}/`, '').replace('/etc/module.xml', ''),
+        enabled: enabledModuleNames.includes(moduleXml.config.module['@_name']),
+      }
+
+      const composerJsonPath = `${basePath}/${module.relativePath}/composer.json`;
+
+      if (fs.existsSync(composerJsonPath)) {
+        const composerJson = JSON.parse(fs.readFileSync(composerJsonPath, 'utf8'));
+        module.version = composerJson.version;
+      }
+
+      modules.push(module);
+    }
   }
 
-  return modules;
+  allModules = modules;
 }
 
-const getModulePath = (module: MageModule): string => {
-  // TODO: handle vendor modules
-  return `${basePath}/code/${module.fqn.replace('_', '/')}`;
+const getModules = (refresh: boolean = false): MageModule[] => {
+  if (allModules.length === 0 || refresh) {
+    loadModules();
+  }
+
+  return allModules;
 }
 
 const moduleExists = (module: MageModule): boolean => {
-  return fs.existsSync(getModulePath(module));
+  return allModules.some((m: MageModule) => {
+    return m.name === module.name && m.namespace === module.namespace;
+  });
 }
 
 const createModule = (module: MageModule): void => {
@@ -52,7 +77,7 @@ const createModule = (module: MageModule): void => {
   const namespace = module.namespace
   const name = module.name
 
-  const modulePath = `${basePath}/code/${namespace}/${name}`;
+  const modulePath = `${basePath}/app/code/${namespace}/${name}`;
   fs.mkdirSync(modulePath, { recursive: true });
   fs.mkdirSync(`${modulePath}/etc`, { recursive: true });
   fs.writeFileSync(`${modulePath}/composer.json`, generateComposerJson(namespace, name));
@@ -60,7 +85,7 @@ const createModule = (module: MageModule): void => {
 }
 
 const getDiXml = (module: MageModule): any => {
-  const path = `${getModulePath(module)}/etc/di.xml`;
+  const path = `${basePath}/${module.relativePath}/etc/di.xml`;
   if (!fs.existsSync(path)) {
     return {};
   }
@@ -78,7 +103,7 @@ const getDiXml = (module: MageModule): any => {
 }
 
 const getFilePath = (module: MageModule, classFqn: string): string => {
-  return `${getModulePath(module)}/${classFqn.split('\\').slice(2).join('/')}.php`;
+  return `${basePath}/${module.relativePath}/${classFqn.split('\\').slice(2).join('/')}.php`;
 }
 
 const getPlugins = (namespaces: string[]): MagePlugin[] => {
@@ -132,7 +157,6 @@ const getPlugins = (namespaces: string[]): MagePlugin[] => {
 
 export {
   getModules,
-  getModulePath,
   moduleExists,
   createModule,
   getDiXml,
