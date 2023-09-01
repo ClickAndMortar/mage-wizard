@@ -7,6 +7,10 @@
       <v-list nav>
         <v-list-item prepend-icon="mdi-package-variant-closed" title="Modules" value="modules"
                      :to="{ path: '/modules' }" tag="a"></v-list-item>
+        <v-list-item prepend-icon="mdi-power-plug-outline" title="Plugins" value="plugins"
+                     :to="{ path: '/plugins' }" tag="a"></v-list-item>
+        <v-list-item prepend-icon="mdi-console" title="Commands" value="commands"
+                     :to="{ path: '/commands' }" tag="a"></v-list-item>
       </v-list>
     </v-navigation-drawer>
 

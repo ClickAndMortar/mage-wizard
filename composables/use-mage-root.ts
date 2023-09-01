@@ -1,3 +1,3 @@
 export default function () {
-  return useState('mage-root', () => `${__dirname}/../../ecom/magento`)
+  return `/Users/michael/Sites/ZadigEtVoltaire/ecom/magento`
 }
