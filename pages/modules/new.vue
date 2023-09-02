@@ -5,12 +5,12 @@
         <v-row>
           <v-col cols="4">
             <v-icon>mdi-package-variant-closed</v-icon>
-            Modules
+            <NuxtLink class="ml-1" :to="{ name: 'modules' }">Modules</NuxtLink>
             <v-icon>mdi-slash-forward</v-icon>
             Create
           </v-col>
           <v-col cols="8" class="text-right">
-            <v-btn color="success" flat size="small" type="submit">Create module</v-btn>
+            <v-btn color="success" flat size="small" type="submit" :loading="creatingModule">Create module</v-btn>
           </v-col>
         </v-row>
       </v-card-title>
@@ -47,6 +47,11 @@
             />
           </v-col>
         </v-row>
+        <v-row>
+          <v-col>
+            TODO: dependencies
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </v-form>
@@ -62,26 +67,36 @@ const module = ref({
   version: '',
 })
 
+const creatingModule = ref(false)
+
 const {data: modules, pending} = await useFetch('/api/modules')
 
 const moduleExists = (namespace: string, name: string) => {
   return unref(modules)?.some((module: any) => module.namespace === namespace && module.name === name)
 }
 
-const createModule = async () => {
+const createModule = (e: Event) => {
+  e.preventDefault();
+
   if (moduleExists(unref(module).namespace, unref(module).name)) {
     return alert('Module already exists')
   }
 
-  await fetch('/api/modules', {
+  creatingModule.value = true
+
+  fetch('/api/modules', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(unref(module)),
+  }).then(() => {
+    navigateTo(`/modules/${unref(module).namespace}_${unref(module).name}`)
+  }).catch((err) => {
+    alert(err)
+  }).finally(() => {
+    creatingModule.value = false
   })
-
-  alert('module created');
 }
 
 </script>

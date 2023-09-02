@@ -1,9 +1,13 @@
-export default function (namespace: string, module: string): string {
-  const psr4Prefix = `${namespace}\\${module}\\`;
+import {MageModule} from '~/lib/types';
+
+export default function (module: MageModule): string {
+  const psr4Prefix = `${module.namespace}\\${module.name}\\`;
+
+  const snakeModuleName = module.name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
   const json: any = {
-    name: `${namespace.toLowerCase()}/module-${module.toLowerCase()}`,
-    version: "100.0.0",
+    name: `${module.namespace.toLowerCase()}/module-${snakeModuleName}`,
+    version: module.version || '0.0.1',
     require: {
       php: ">=7.3",
       "magento/magento-composer-installer": "*"

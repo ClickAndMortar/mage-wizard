@@ -26,6 +26,16 @@ export type MageCommand = {
   command: string;
 }
 
+export type MageNewCommand = {
+  name: string;
+  description: string;
+  module: string;
+  injects: string[];
+  class?: string;
+}
+
+// export type MageNewCommand = Omit<'module', MageCommand>
+
 export type MageDiXmlTypeArgumentItem = {
   name: string;
   type: string;

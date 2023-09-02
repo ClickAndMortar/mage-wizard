@@ -4,12 +4,14 @@ import {
   MageDiXmlType,
   MageDiXmlTypeArgument,
   MageDiXmlTypePlugin, MageDiXmlVirtualType,
-  MageModule,
+  MageModule, MageNewCommand,
   MagePlugin
 } from '../types';
 import parser from '../php-parser-engine'
 import generateComposerJson from '../generator/module-composer-json'
 import generateRegistrationPhp from '../generator/module-registration-php'
+import generateModuleXml from '../generator/module-module-xml'
+import generateCommand from '../generator/module-command'
 import {XMLParser} from 'fast-xml-parser';
 import jsonpath from 'jsonpath';
 import fs from 'fs';
@@ -84,12 +86,38 @@ const createModule = (module: MageModule): void => {
 
   const namespace = module.namespace
   const name = module.name
+  if (!module.fqn) {
+    module.fqn = `${namespace}_${name}`;
+  }
 
   const modulePath = `${basePath}/app/code/${namespace}/${name}`;
   fs.mkdirSync(modulePath, {recursive: true});
   fs.mkdirSync(`${modulePath}/etc`, {recursive: true});
-  fs.writeFileSync(`${modulePath}/composer.json`, generateComposerJson(namespace, name));
-  fs.writeFileSync(`${modulePath}/registration.php`, generateRegistrationPhp(namespace, name));
+  fs.writeFileSync(`${modulePath}/composer.json`, generateComposerJson(module));
+  fs.writeFileSync(`${modulePath}/registration.php`, generateRegistrationPhp(module));
+  fs.writeFileSync(`${modulePath}/etc/module.xml`, generateModuleXml(module));
+
+  loadModules();
+}
+
+const createCommand = (command: MageNewCommand): void => {
+  const module = getModule(command.module);
+  const modulePath = `${basePath}/${module.relativePath}`;
+
+  const commandClassName = command.name.split(':').map((part: string) => {
+    return part.charAt(0).toUpperCase() + part.slice(1);
+  }).join('');
+
+  command.class = commandClassName;
+
+  fs.mkdirSync(`${modulePath}/Console/Command`, {recursive: true});
+  fs.writeFileSync(`${modulePath}/Console/Command/${commandClassName}.php`, generateCommand(module, command));
+
+  // TODO: declare in di.xml
+}
+
+const getModulePhpNamespace = (module: MageModule): string => {
+  return module.fqn.replace('_', '\\');
 }
 
 const getDiXml = (module: MageModule): MageDiXmlConfig => {
@@ -365,9 +393,12 @@ const getPlugins = (namespaces: string[] = []): MagePlugin[] => {
 
 export {
   getModules,
+  getModule,
   moduleExists,
   createModule,
   getPlugins,
   getClassFilePath,
   getCommands,
+  createCommand,
+  getModulePhpNamespace,
 };

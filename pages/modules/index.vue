@@ -31,6 +31,9 @@
         <template v-slot:item.enabled="{ item }">
           <v-icon v-if="item.columns.enabled">mdi-check</v-icon>
         </template>
+        <template v-slot:item.actions="{ item }">
+          <v-btn icon size="x-small" flat :to="{ name: 'modules-name', params: { name: item.raw.fqn } }"><v-icon size="medium">mdi-eye-outline</v-icon></v-btn>
+        </template>
       </v-data-table>
     </v-card-text>
   </v-card>
@@ -50,5 +53,6 @@ const headers = [
   { title: 'Name', align: 'start', key: 'name', width: '40%', },
   { title: 'Version', align: 'start', key: 'version', width: '10%' },
   { title: 'Enabled', align: 'start', key: 'enabled', width: '10%' },
+  { title: 'Actions', align: 'start', key: 'actions', width: '10%' },
 ]
 </script>

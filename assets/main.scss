@@ -11,3 +11,11 @@ code {
 a {
   text-decoration: none;
 }
+
+.v-data-table__tr {
+  &:hover {
+    td {
+      background-color: #fafafa!important;
+    }
+  }
+}
