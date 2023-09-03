@@ -52,13 +52,13 @@ export type MageDiXmlTypeArgument = {
 export type MageDiXmlTypePlugin = {
   name: string;
   type: string;
-  sortOrder: number;
-  disabled: boolean;
+  sortOrder?: number;
+  disabled?: boolean;
 }
 
 export type MageDiXmlType = {
   name: string;
-  shared: boolean;
+  shared?: boolean;
   arguments: MageDiXmlTypeArgument[];
   plugins: MageDiXmlTypePlugin[];
 }

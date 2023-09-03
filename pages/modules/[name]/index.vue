@@ -11,7 +11,7 @@
     </v-card-text>
   </v-card>
   <v-expansion-panels variant="accordion" class="mt-4">
-    <v-expansion-panel>
+    <v-expansion-panel :readonly="!plugins?.length">
       <v-expansion-panel-title>
         <v-row no-gutters>
           <v-col cols="4" class="d-flex justify-start align-center">
@@ -30,7 +30,7 @@
         <mage-module-plugins :plugins="plugins"/>
       </v-expansion-panel-text>
     </v-expansion-panel>
-    <v-expansion-panel>
+    <v-expansion-panel :readonly="!commands?.length">
       <v-expansion-panel-title>
         <v-row no-gutters>
           <v-col cols="4" class="d-flex justify-start align-center">

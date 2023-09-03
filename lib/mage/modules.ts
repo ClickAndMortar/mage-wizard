@@ -12,7 +12,7 @@ import generateComposerJson from '../generator/module-composer-json'
 import generateRegistrationPhp from '../generator/module-registration-php'
 import generateModuleXml from '../generator/module-module-xml'
 import generateCommand from '../generator/module-command'
-import {XMLParser} from 'fast-xml-parser';
+import {XMLBuilder, XMLParser} from 'fast-xml-parser';
 import jsonpath from 'jsonpath';
 import fs from 'fs';
 import useMageRoot from '~/composables/use-mage-root';
@@ -22,7 +22,7 @@ const basePath = useMageRoot();
 
 let allModules: MageModule[] = [];
 
-const loadModules = (): void => {
+export const loadModules = (): void => {
   const modules: MageModule[] = [];
 
   const configPhp = fs.readFileSync(`${basePath}/app/etc/config.php`, 'utf8');
@@ -65,7 +65,7 @@ const loadModules = (): void => {
   allModules = modules;
 }
 
-const getModules = (refresh: boolean = false): MageModule[] => {
+export const getModules = (refresh: boolean = false): MageModule[] => {
   if (allModules.length === 0 || refresh) {
     loadModules();
   }
@@ -73,13 +73,13 @@ const getModules = (refresh: boolean = false): MageModule[] => {
   return allModules;
 }
 
-const moduleExists = (module: MageModule): boolean => {
+export const moduleExists = (module: MageModule): boolean => {
   return allModules.some((m: MageModule) => {
     return m.name === module.name && m.namespace === module.namespace;
   });
 }
 
-const createModule = (module: MageModule): void => {
+export const createModule = (module: MageModule): void => {
   if (moduleExists(module)) {
     throw new Error('Module already exists');
   }
@@ -100,7 +100,7 @@ const createModule = (module: MageModule): void => {
   loadModules();
 }
 
-const createCommand = (command: MageNewCommand): void => {
+export const createCommand = (command: MageNewCommand): void => {
   const module = getModule(command.module);
   const modulePath = `${basePath}/${module.relativePath}`;
 
@@ -113,14 +113,175 @@ const createCommand = (command: MageNewCommand): void => {
   fs.mkdirSync(`${modulePath}/Console/Command`, {recursive: true});
   fs.writeFileSync(`${modulePath}/Console/Command/${commandClassName}.php`, generateCommand(module, command));
 
-  // TODO: declare in di.xml
+  const diXmlPath = `${modulePath}/etc/di.xml`;
+  if (!fs.existsSync(diXmlPath)) {
+    const diXml = {
+      '?xml': { '@_version': '1.0' },
+      config: {
+        '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+        '@_xsi:noNamespaceSchemaLocation': 'urn:magento:framework:ObjectManager/etc/config.xsd'
+      }
+    };
+
+    const builder = new XMLBuilder({
+      ignoreAttributes: false,
+      format: true,
+      // suppressEmptyNode: true,
+    });
+
+    fs.writeFileSync(diXmlPath, builder.build(diXml));
+  }
 }
 
-const getModulePhpNamespace = (module: MageModule): string => {
+export const generateDiXml = (diXml: MageDiXmlConfig): string => {
+  const diXmlObject: any = {
+    '?xml': { '@_version': '1.0' },
+    config: {
+      '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@_xsi:noNamespaceSchemaLocation': 'urn:magento:framework:ObjectManager/etc/config.xsd'
+    }
+  };
+
+  // Preferences
+  if (diXml.preferences.length > 0) {
+    diXmlObject.config.preference = [];
+
+    for (const preference of diXml.preferences) {
+      diXmlObject.config.preference.push({
+        '@_for': preference.for,
+        '@_type': preference.type,
+      });
+    }
+  }
+
+  // Types
+  if (diXml.types.length > 0) {
+    diXmlObject.config.type = [];
+  }
+
+  for (const type of diXml.types) {
+    const typeObject: any = {
+      '@_name': type.name,
+    }
+
+    if (type.shared) {
+      typeObject['@_shared'] = type.shared ? 'true' : 'false';
+    }
+
+    if (type.arguments.length > 0) {
+      typeObject.arguments = {
+        argument: [],
+      }
+    }
+
+    for (const argument of type.arguments) {
+      const argumentObject: any = {
+        '@_name': argument.name,
+        '@_xsi:type': argument.type,
+      }
+
+      if (argument.type === 'array' && argument.values) {
+        argumentObject.item = []
+
+        for (const value of argument.values) {
+          argumentObject.item.push({
+            '@_name': value.name,
+            '@_xsi:type': value.type,
+            '#text': value.value,
+          });
+        }
+      } else {
+        argumentObject['#text'] = argument.value
+      }
+
+      typeObject.arguments.argument.push(argumentObject);
+    }
+
+    if (type.plugins.length > 0) {
+      typeObject.plugin = [];
+
+      for (const plugin of type.plugins) {
+        const pluginObject: any = {
+          '@_name': plugin.name,
+          '@_type': plugin.type,
+        }
+
+        if (plugin.sortOrder) {
+          pluginObject['@_sortOrder'] = plugin.sortOrder;
+        }
+
+        if (plugin.disabled) {
+          pluginObject['@_disabled'] = plugin.disabled ? 'true' : 'false';
+        }
+
+        typeObject.plugin.push(pluginObject);
+      }
+    }
+
+    diXmlObject.config.type.push(typeObject);
+  }
+
+  // Virtual Types
+  if (diXml.virtualTypes.length > 0) {
+    diXmlObject.config.virtualType = [];
+  }
+
+  for (const virtualType of diXml.virtualTypes) {
+    const virtualTypeObject: any = {
+      '@_name': virtualType.name,
+      '@_type': virtualType.type,
+    }
+
+    if (virtualType.shared) {
+      virtualTypeObject['@_shared'] = virtualType.shared ? 'true' : 'false';
+    }
+
+    if (virtualType.arguments.length > 0) {
+      virtualTypeObject.arguments = {
+        argument: [],
+      }
+    }
+
+    for (const argument of virtualType.arguments) {
+      const argumentObject: any = {
+        '@_name': argument.name,
+        '@_xsi:type': argument.type,
+      }
+
+      if (argument.type === 'array' && argument.values) {
+        argumentObject.item = []
+
+        for (const value of argument.values) {
+          argumentObject.item.push({
+            '@_name': value.name,
+            '@_xsi:type': value.type,
+            '#text': value.value,
+          });
+        }
+      } else {
+        argumentObject['#text'] = argument.value
+      }
+
+      virtualTypeObject.arguments.argument.push(argumentObject);
+    }
+
+    diXmlObject.config.virtualType.push(virtualTypeObject);
+  }
+
+  const builder = new XMLBuilder({
+    ignoreAttributes: false,
+    format: true,
+    suppressEmptyNode: true,
+  });
+
+  return builder.build(diXmlObject);
+}
+
+export const getModulePhpNamespace = (module: MageModule): string => {
   return module.fqn.replace('_', '\\');
 }
 
-const getDiXml = (module: MageModule): MageDiXmlConfig => {
+export const getDiXml = (module: MageModule): MageDiXmlConfig => {
   const config: MageDiXmlConfig = {
     types: [],
     preferences: [],
@@ -160,9 +321,12 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
     for (const type of parsed.config.type) {
       const mageType: MageDiXmlType = {
         name: type['@_name'],
-        shared: type['@_shared'] === 'true',
         arguments: [],
         plugins: [],
+      }
+
+      if (type['@_shared']) {
+        mageType.shared = type['@_shared'] === 'true';
       }
 
       if (type.arguments?.argument) {
@@ -172,8 +336,8 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
             type: argument['@_xsi:type'],
           }
 
-          if (argument.value) {
-            mageArgument.value = argument.value;
+          if (argument['#text']) {
+            mageArgument.value = argument['#text'];
           }
 
           if (argument.item) {
@@ -182,7 +346,7 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
               mageArgument.values.push({
                 name: item['@_name'],
                 type: item['@_xsi:type'],
-                value: item.value || item['#text'],
+                value: item['#text'],
               });
             }
           }
@@ -196,8 +360,14 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
           const magePlugin: MageDiXmlTypePlugin = {
             name: plugin['@_name'],
             type: plugin['@_type'],
-            sortOrder: parseInt(plugin['@_sortOrder'] || '0'),
-            disabled: plugin['@_disabled'] === 'true',
+          }
+
+          if (plugin['@_sortOrder']) {
+            magePlugin.sortOrder = parseInt(plugin['@_sortOrder']);
+          }
+
+          if (plugin['@_disabled']) {
+            magePlugin.disabled = plugin['@_disabled'] === 'true';
           }
 
           mageType.plugins.push(magePlugin);
@@ -213,9 +383,12 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
       const mageVirtualType: MageDiXmlVirtualType = {
         name: virtualType['@_name'],
         type: virtualType['@_type'],
-        shared: virtualType['@_shared'] === 'true',
         arguments: [],
         plugins: [],
+      }
+
+      if (virtualType['@_shared']) {
+        mageVirtualType.shared = virtualType['@_shared'] === 'true';
       }
 
       if (virtualType.arguments?.argument) {
@@ -225,8 +398,8 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
             type: argument['@_xsi:type'],
           }
 
-          if (argument.value) {
-            mageArgument.value = argument.value;
+          if (argument['#text']) {
+            mageArgument.value = argument['#text'];
           }
 
           if (argument.item) {
@@ -235,7 +408,7 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
               mageArgument.values.push({
                 name: item['@_name'],
                 type: item['@_xsi:type'],
-                value: item.value || item['#text'],
+                value: item['#text'],
               });
             }
           }
@@ -251,11 +424,11 @@ const getDiXml = (module: MageModule): MageDiXmlConfig => {
   return config;
 }
 
-const getClassFilePath = (module: MageModule, classFqn: string): string => {
+export const getClassFilePath = (module: MageModule, classFqn: string): string => {
   return `${basePath}/${module.relativePath}/${classFqn.split('\\').slice(2).join('/')}.php`;
 }
 
-const getNamespaces = (): string[] => {
+export const getNamespaces = (): string[] => {
   const namespaces: string[] = [];
   for (const module of getModules()) {
     if (!namespaces.includes(module.namespace)) {
@@ -265,7 +438,7 @@ const getNamespaces = (): string[] => {
   return namespaces;
 }
 
-const getModule = (name: string): MageModule => {
+export const getModule = (name: string): MageModule => {
   const modules = getModules();
   for (const module of modules) {
     if (module.fqn === name) {
@@ -277,7 +450,7 @@ const getModule = (name: string): MageModule => {
 }
 
 
-const getCommands = (namespaces: string[] = []): MageCommand[] => {
+export const getCommands = (namespaces: string[] = []): MageCommand[] => {
   const modules = getModules();
   const commands: MageCommand[] = [];
 
@@ -332,7 +505,7 @@ const getCommands = (namespaces: string[] = []): MageCommand[] => {
   return commands;
 }
 
-const getPlugins = (namespaces: string[] = []): MagePlugin[] => {
+export const getPlugins = (namespaces: string[] = []): MagePlugin[] => {
   const modules = getModules();
   const plugins: MagePlugin[] = [];
 
@@ -390,15 +563,3 @@ const getPlugins = (namespaces: string[] = []): MagePlugin[] => {
 
   return plugins;
 }
-
-export {
-  getModules,
-  getModule,
-  moduleExists,
-  createModule,
-  getPlugins,
-  getClassFilePath,
-  getCommands,
-  createCommand,
-  getModulePhpNamespace,
-};
