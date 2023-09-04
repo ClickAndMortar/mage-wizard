@@ -4,7 +4,7 @@
       <v-icon>mdi-package-variant-closed</v-icon>
       <NuxtLink class="ml-1" :to="{ name: 'modules' }">Modules</NuxtLink>
       <v-icon>mdi-slash-forward</v-icon>
-      {{ module }}
+      {{ moduleName }}
     </v-card-title>
     <v-card-text>
       Description
@@ -54,12 +54,16 @@
 
 <script setup lang="ts">
 const route = useRoute()
-const module = route.params.name
+const moduleName = route.params.name
 
 useHead({
-  title: String(module),
+  title: String(moduleName),
 })
 
-const {data: plugins, pending: pendingPlugins} = useFetch('/api/plugins', {query: {module}})
-const {data: commands, pending: pendingCommands} = useFetch('/api/commands', {query: {module}})
+const {data: module} = await useFetch(`/api/modules/${moduleName}`)
+if (!module.value) {
+  throw showError({ statusCode: 404, statusMessage: 'Module not found' })
+}
+const {data: plugins, pending: pendingPlugins} = useFetch('/api/plugins', {query: {module: moduleName}})
+const {data: commands, pending: pendingCommands} = useFetch('/api/commands', {query: {module: moduleName}})
 </script>

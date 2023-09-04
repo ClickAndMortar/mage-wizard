@@ -5,6 +5,8 @@ export type MageModule = {
   relativePath?: string;
   version?: string;
   enabled?: boolean;
+  core: boolean;
+  vendor: boolean;
 }
 
 export type MagePlugin = {
@@ -59,8 +61,8 @@ export type MageDiXmlTypePlugin = {
 export type MageDiXmlType = {
   name: string;
   shared?: boolean;
-  arguments: MageDiXmlTypeArgument[];
-  plugins: MageDiXmlTypePlugin[];
+  arguments?: MageDiXmlTypeArgument[];
+  plugins?: MageDiXmlTypePlugin[];
 }
 
 export type MageDiXmlVirtualType = MageDiXmlType & {
@@ -68,7 +70,16 @@ export type MageDiXmlVirtualType = MageDiXmlType & {
 }
 
 export type MageDiXmlConfig = {
-  types: MageDiXmlType[];
-  virtualTypes: MageDiXmlVirtualType[];
-  preferences: MageDiXmlPreference[];
+  types?: MageDiXmlType[];
+  virtualTypes?: MageDiXmlVirtualType[];
+  preferences?: MageDiXmlPreference[];
 }
+
+export type Notification = {
+  title?: string;
+  message: string;
+  type?: NotificationType;
+  duration?: number;
+}
+
+export type NotificationType = 'success' | 'info' | 'warning' | 'error';

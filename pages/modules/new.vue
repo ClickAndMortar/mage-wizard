@@ -24,6 +24,7 @@
               variant="outlined"
               dense
               required
+              autofocus
             />
           </v-col>
           <v-col cols="4">

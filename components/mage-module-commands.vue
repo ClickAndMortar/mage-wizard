@@ -2,20 +2,20 @@
   <v-table v-if="commands?.length > 0" density="compact">
     <thead>
     <tr>
-      <th class="text-left">
+      <th class="text-left w-40">
         Command
       </th>
-      <th class="text-left">
+      <th class="text-left w-60">
         Class
       </th>
     </tr>
     </thead>
     <tbody>
     <tr
-        v-for="command in props.commands"
-        :key="command.name"
+        v-for="(command, kC) in props.commands"
+        :key="`command-${kC}`"
     >
-      <td><code>{{ command.class }}</code></td>
+      <td><code>{{ command.name }}</code></td>
       <td><code>{{ command.class }}</code></td>
     </tr>
     </tbody>

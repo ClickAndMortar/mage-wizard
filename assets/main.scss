@@ -19,3 +19,12 @@ a {
     }
   }
 }
+
+.notificationContainer {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  display: grid;
+  grid-gap: 0.5em;
+  z-index: 9999;
+}

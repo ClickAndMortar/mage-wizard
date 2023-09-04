@@ -2,7 +2,7 @@ import {
   MageCommand,
   MageDiXmlConfig,
   MageDiXmlType,
-  MageDiXmlTypeArgument,
+  MageDiXmlTypeArgument, MageDiXmlTypeArgumentItem,
   MageDiXmlTypePlugin, MageDiXmlVirtualType,
   MageModule, MageNewCommand,
   MagePlugin
@@ -49,6 +49,8 @@ export const loadModules = (): void => {
         fqn: moduleXml.config.module['@_name'],
         relativePath: moduleXmlFile.replace(`${basePath}/`, '').replace('/etc/module.xml', ''),
         enabled: enabledModuleNames.includes(moduleXml.config.module['@_name']),
+        core: moduleXmlFile.includes('/vendor/magento/'),
+        vendor: moduleXmlFile.includes('/vendor/'),
       }
 
       const composerJsonPath = `${basePath}/${module.relativePath}/composer.json`;
@@ -114,23 +116,73 @@ export const createCommand = (command: MageNewCommand): void => {
   fs.writeFileSync(`${modulePath}/Console/Command/${commandClassName}.php`, generateCommand(module, command));
 
   const diXmlPath = `${modulePath}/etc/di.xml`;
-  if (!fs.existsSync(diXmlPath)) {
-    const diXml = {
-      '?xml': { '@_version': '1.0' },
-      config: {
-        '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-        '@_xsi:noNamespaceSchemaLocation': 'urn:magento:framework:ObjectManager/etc/config.xsd'
-      }
-    };
+  const diXml = getDiXml(module);
 
-    const builder = new XMLBuilder({
-      ignoreAttributes: false,
-      format: true,
-      // suppressEmptyNode: true,
-    });
-
-    fs.writeFileSync(diXmlPath, builder.build(diXml));
+  let commandListType: MageDiXmlType | undefined;
+  let commandListIdx: number | undefined;
+  for (const [idx, type] of (diXml.types || []).entries()) {
+    if (type.name.includes('CommandList')) {
+      commandListType = type;
+      commandListIdx = idx;
+      break;
+    }
   }
+
+  if (!diXml.types) {
+    diXml.types = [];
+  }
+
+  const argumentItem: MageDiXmlTypeArgumentItem = {
+    name: command.name,
+    type: 'object',
+    value: `${getModulePhpNamespace(module)}\\Console\\Command\\${commandClassName}`,
+  }
+
+  if (!commandListType) {
+    commandListType = {
+      name: `Magento\\Framework\\Console\\CommandListInterface`,
+      arguments: [],
+    }
+
+    diXml.types.push(commandListType);
+  }
+
+  if (!commandListType.arguments || commandListType.arguments.length === 0) {
+    commandListType.arguments = [];
+
+    commandListType.arguments.push({
+      name: 'commands',
+      type: 'array',
+    })
+  }
+
+  for (const [idx, argument] of commandListType.arguments.entries()) {
+    if (argument.name === 'commands') {
+      if (!argument.values) {
+        argument.values = [];
+      }
+
+      if (argument.values.some((value: MageDiXmlTypeArgumentItem) => {
+        return value.name === argumentItem.name;
+      })) {
+        throw new Error(`Command ${argumentItem.name} already exists`);
+      }
+
+      argument.values.push(argumentItem);
+
+      commandListType.arguments[idx] = argument;
+    }
+  }
+
+  if (commandListIdx !== undefined) {
+    diXml.types[commandListIdx] = commandListType;
+  } else {
+    diXml.types.push(commandListType);
+  }
+
+  console.log(JSON.stringify(diXml, null, 2));
+
+  fs.writeFileSync(diXmlPath, generateDiXml(diXml));
 }
 
 export const generateDiXml = (diXml: MageDiXmlConfig): string => {
@@ -143,7 +195,7 @@ export const generateDiXml = (diXml: MageDiXmlConfig): string => {
   };
 
   // Preferences
-  if (diXml.preferences.length > 0) {
+  if (diXml.preferences && diXml.preferences.length > 0) {
     diXmlObject.config.preference = [];
 
     for (const preference of diXml.preferences) {
@@ -155,11 +207,11 @@ export const generateDiXml = (diXml: MageDiXmlConfig): string => {
   }
 
   // Types
-  if (diXml.types.length > 0) {
+  if (diXml.types && diXml.types.length > 0) {
     diXmlObject.config.type = [];
   }
 
-  for (const type of diXml.types) {
+  for (const type of diXml.types || []) {
     const typeObject: any = {
       '@_name': type.name,
     }
@@ -168,13 +220,13 @@ export const generateDiXml = (diXml: MageDiXmlConfig): string => {
       typeObject['@_shared'] = type.shared ? 'true' : 'false';
     }
 
-    if (type.arguments.length > 0) {
+    if (type.arguments && type.arguments.length > 0) {
       typeObject.arguments = {
         argument: [],
       }
     }
 
-    for (const argument of type.arguments) {
+    for (const argument of type.arguments || []) {
       const argumentObject: any = {
         '@_name': argument.name,
         '@_xsi:type': argument.type,
@@ -197,7 +249,7 @@ export const generateDiXml = (diXml: MageDiXmlConfig): string => {
       typeObject.arguments.argument.push(argumentObject);
     }
 
-    if (type.plugins.length > 0) {
+    if (type.plugins && type.plugins.length > 0) {
       typeObject.plugin = [];
 
       for (const plugin of type.plugins) {
@@ -222,11 +274,11 @@ export const generateDiXml = (diXml: MageDiXmlConfig): string => {
   }
 
   // Virtual Types
-  if (diXml.virtualTypes.length > 0) {
+  if (diXml.virtualTypes && diXml.virtualTypes.length > 0) {
     diXmlObject.config.virtualType = [];
   }
 
-  for (const virtualType of diXml.virtualTypes) {
+  for (const virtualType of diXml.virtualTypes || []) {
     const virtualTypeObject: any = {
       '@_name': virtualType.name,
       '@_type': virtualType.type,
@@ -236,13 +288,13 @@ export const generateDiXml = (diXml: MageDiXmlConfig): string => {
       virtualTypeObject['@_shared'] = virtualType.shared ? 'true' : 'false';
     }
 
-    if (virtualType.arguments.length > 0) {
+    if (virtualType.arguments && virtualType.arguments.length > 0) {
       virtualTypeObject.arguments = {
         argument: [],
       }
     }
 
-    for (const argument of virtualType.arguments) {
+    for (const argument of virtualType.arguments || []) {
       const argumentObject: any = {
         '@_name': argument.name,
         '@_xsi:type': argument.type,
@@ -309,6 +361,8 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
   }
 
   if (parsed.config.preference) {
+    config.preferences = [];
+
     for (const preference of parsed.config.preference) {
       config.preferences.push({
         for: preference['@_for'],
@@ -318,6 +372,8 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
   }
 
   if (parsed.config.type) {
+    config.types = []
+
     for (const type of parsed.config.type) {
       const mageType: MageDiXmlType = {
         name: type['@_name'],
@@ -330,6 +386,8 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
       }
 
       if (type.arguments?.argument) {
+        mageType.arguments = [];
+
         for (const argument of type.arguments.argument) {
           const mageArgument: MageDiXmlTypeArgument = {
             name: argument['@_name'],
@@ -356,6 +414,8 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
       }
 
       if (type.plugin) {
+        mageType.plugins = [];
+
         for (const plugin of type.plugin) {
           const magePlugin: MageDiXmlTypePlugin = {
             name: plugin['@_name'],
@@ -379,6 +439,8 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
   }
 
   if (parsed.config.virtualType) {
+    config.virtualTypes = []
+
     for (const virtualType of parsed.config.virtualType) {
       const mageVirtualType: MageDiXmlVirtualType = {
         name: virtualType['@_name'],
@@ -392,6 +454,8 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
       }
 
       if (virtualType.arguments?.argument) {
+        mageVirtualType.arguments = [];
+
         for (const argument of virtualType.arguments.argument) {
           const mageArgument: MageDiXmlTypeArgument = {
             name: argument['@_name'],
@@ -462,12 +526,12 @@ export const getCommands = (namespaces: string[] = []): MageCommand[] => {
     if (namespaces.includes(module.namespace)) {
       const diXml = getDiXml(module);
 
-      for (const type of diXml.types) {
+      for (const type of diXml.types || []) {
         if (!type.name.includes('CommandList')) {
           continue;
         }
 
-        for (const arg of type.arguments) {
+        for (const arg of type.arguments || []) {
           if (arg.name === 'commands' && arg.values) {
             for (const value of arg.values) {
               const command: MageCommand = {
@@ -517,8 +581,8 @@ export const getPlugins = (namespaces: string[] = []): MagePlugin[] => {
     if (namespaces.includes(module.namespace)) {
       const diXml = getDiXml(module);
 
-      for (const type of diXml.types) {
-        for (const plugin of type.plugins) {
+      for (const type of diXml.types || []) {
+        for (const plugin of type.plugins || []) {
           const magePlugin: MagePlugin = {
             module: module,
             class: type.name,

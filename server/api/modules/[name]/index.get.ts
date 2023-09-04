@@ -6,5 +6,9 @@ export default defineEventHandler((event) => {
     throw new Error('Missing module name');
   }
 
-  return getModule(name);
+  try {
+    return getModule(name);
+  } catch (e) {
+    return createError({statusCode: 404});
+  }
 })

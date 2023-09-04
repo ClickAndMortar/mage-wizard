@@ -11,6 +11,9 @@ dependencies:
   '@types/jsonpath':
     specifier: ^0.2.0
     version: 0.2.0
+  defu:
+    specifier: ^6.1.2
+    version: 6.1.2
   fast-glob:
     specifier: ^3.3.1
     version: 3.3.1
@@ -2748,7 +2751,6 @@ packages:
 
   /defu@6.1.2:
     resolution: {integrity: sha512-+uO4+qr7msjNNWKYPHqN/3+Dx3NFkmIzayk2L1MyZQlvgZb/J1A0fo410dpKrN2SnqFjt8n4JL8fDJE0wIgjFQ==}
-    dev: true
 
   /delayed-stream@1.0.0:
     resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}

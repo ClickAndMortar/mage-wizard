@@ -20,6 +20,7 @@
       <v-container>
         <slot/>
       </v-container>
+      <notifications/>
     </v-main>
   </v-layout>
 </template>

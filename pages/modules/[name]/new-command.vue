@@ -7,7 +7,7 @@
             <v-icon>mdi-package-variant-closed</v-icon>
             <NuxtLink class="ml-1" :to="{ name: 'modules' }">Modules</NuxtLink>
             <v-icon>mdi-slash-forward</v-icon>
-            {{ module?.fqn }}
+            <NuxtLink class="ml-1" :to="{ name: 'modules-name', params: { name: module?.fqn } }">{{ module?.fqn }}</NuxtLink>
             <v-icon>mdi-slash-forward</v-icon>
             Create command
           </v-col>
@@ -21,13 +21,14 @@
           <v-col cols="4">
             <v-text-field
               v-model="command.name"
-              :rules="[() => !!command.name || 'Name is required']"
+              :rules="nameRules"
               label="Name"
               variant="outlined"
               hint="Example: mage-wizard:hello-world"
               persistent-hint
               dense
               required
+              autofocus
             />
           </v-col>
           <v-col cols="4">
@@ -52,11 +53,6 @@
               variant="outlined"
               dense
             ></v-select>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            TODO: dependencies
           </v-col>
         </v-row>
       </v-card-text>
@@ -86,6 +82,11 @@ const injects = [
   { key: 'scope_config', label: 'ScopeConfigInterface' },
 ]
 
+const nameRules = [
+    (v: any) => !!v || 'Name is required',
+    (v: any) => (v && /^[a-z0-9:-_]+$/.test(v)) || 'Name can only contain lowercase letters, numbers, dashes, colons, and underscores',
+];
+
 const creatingCommand = ref(false)
 
 const {data: module, pending} = await useFetch(`/api/modules/${route.params.name}`)
@@ -111,7 +112,8 @@ const createCommand = async (e: Event) => {
     },
     body: JSON.stringify(command.value),
   }).then(() => {
-    // navigateTo(`/modules/${unref(module).namespace}_${unref(module).name}`)
+    useNotification().notify({message: 'Command successfully created', type: 'success'})
+    // navigateTo(`/modules/${module?.value?.fqn}`)
   }).catch((err) => {
     alert(err)
   }).finally(() => {
