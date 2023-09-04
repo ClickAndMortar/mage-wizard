@@ -1,18 +1,18 @@
 <template>
   <div class="notificationContainer">
-    <v-slide-y-transition group>
-      <v-alert
+    <VSlideYTransition group>
+      <VAlert
         v-for="(notification, kN) in notifications.values()"
         :key="`notification-${kN}`"
-        :type="notification.type"
-        :title="notification.title"
+        :type="notification.type ? notification.type : 'info'"
+        :title="notification.title ? notification.title : ''"
         variant="elevated"
         width="400px"
-      >{{ notification.message }}</v-alert
+        >{{ notification.message }}</VAlert
       >
-    </v-slide-y-transition>
+    </VSlideYTransition>
   </div>
 </template>
 <script setup lang="ts">
-const notifications: Ref<Map<string, Notification>> = useNotification().notifications
+  const notifications = useNotification().notifications
 </script>

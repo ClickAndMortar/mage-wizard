@@ -1,0 +1,4 @@
+*.hbs
+/test.js
+node_modules
+/.nuxt

@@ -1,4 +1,4 @@
-import {getPlugins} from '~/lib/mage/modules';
+import { getPlugins } from '~/lib/mage/modules'
 
 export default defineEventHandler((event) => {
   const query = getQuery(event)

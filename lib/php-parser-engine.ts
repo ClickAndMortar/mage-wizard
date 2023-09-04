@@ -1,7 +1,7 @@
-import engine from 'php-parser';
+import Engine from 'php-parser'
 
 // @ts-ignore
-const parser = new engine({
+const parser = new Engine({
   parser: {
     extractDoc: false,
     php7: true,
@@ -9,6 +9,6 @@ const parser = new engine({
   ast: {
     withPositions: false,
   },
-});
+})
 
-export default parser;
+export default parser

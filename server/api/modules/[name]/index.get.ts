@@ -1,14 +1,14 @@
-import {getModule} from '~/lib/mage/modules';
+import { getModule } from '~/lib/mage/modules'
 
 export default defineEventHandler((event) => {
-  const name = event.context?.params?.name;
+  const name = event.context?.params?.name
   if (!name) {
-    throw new Error('Missing module name');
+    throw new Error('Missing module name')
   }
 
   try {
-    return getModule(name);
-  } catch (e) {
-    return createError({statusCode: 404});
+    return getModule(name)
+  } catch {
+    return createError({ statusCode: 404 })
   }
 })

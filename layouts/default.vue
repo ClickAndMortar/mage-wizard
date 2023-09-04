@@ -1,31 +1,28 @@
 <template>
-  <v-layout class="rounded rounded-md">
-    <v-navigation-drawer color="#3d3d3d">
+  <VLayout class="rounded rounded-md">
+    <VNavigationDrawer color="#3d3d3d">
       <div class="text-center my-3">
-        <v-icon size="40px">mdi-wizard-hat</v-icon>
+        <VIcon size="40px">mdi-wizard-hat</VIcon>
       </div>
-      <v-list nav>
-        <v-list-item prepend-icon="mdi-package-variant-closed" title="Modules" value="modules"
-                     :to="{ path: '/modules' }" tag="a"></v-list-item>
-        <v-list-item prepend-icon="mdi-power-plug-outline" title="Plugins" value="plugins"
-                     :to="{ path: '/plugins' }" tag="a"></v-list-item>
-        <v-list-item prepend-icon="mdi-console" title="Commands" value="commands"
-                     :to="{ path: '/commands' }" tag="a"></v-list-item>
-      </v-list>
-    </v-navigation-drawer>
+      <VList nav>
+        <VListItem prepend-icon="mdi-package-variant-closed" title="Modules" value="modules" :to="{ path: '/modules' }" tag="a" />
+        <VListItem prepend-icon="mdi-power-plug-outline" title="Plugins" value="plugins" :to="{ path: '/plugins' }" tag="a" />
+        <VListItem prepend-icon="mdi-console" title="Commands" value="commands" :to="{ path: '/commands' }" tag="a" />
+      </VList>
+    </VNavigationDrawer>
 
-    <v-app-bar title="Mage Wizard" color="#3d3d3d"></v-app-bar>
+    <VAppBar title="Mage Wizard" color="#3d3d3d" />
 
-    <v-main class="d-flex" style="min-height: 300px;">
-      <v-container>
-        <slot/>
-      </v-container>
-      <notifications/>
-    </v-main>
-  </v-layout>
+    <VMain class="d-flex" style="min-height: 300px">
+      <VContainer>
+        <slot></slot>
+      </VContainer>
+      <Notifications />
+    </VMain>
+  </VLayout>
 </template>
 <script setup lang="ts">
-useHead({
-  titleTemplate: '%s - Mage Wizard',
-})
+  useHead({
+    titleTemplate: '%s - Mage Wizard',
+  })
 </script>
