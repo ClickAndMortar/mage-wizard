@@ -28,3 +28,13 @@ a {
   grid-gap: 0.5em;
   z-index: 9999;
 }
+
+.table-striped {
+  tbody {
+    tr {
+      &:nth-child(odd) {
+        background-color: #fafafa;
+      }
+    }
+  }
+}

@@ -5,6 +5,9 @@ import jsonpath from 'jsonpath'
 import fg from 'fast-glob'
 import type {
   MageCommand,
+  MageSystemConfig,
+  MageSystemConfigGroup,
+  MageSystemConfigSection,
   MageDiXmlConfig,
   MageDiXmlType,
   MageDiXmlTypeArgument,
@@ -43,6 +46,9 @@ export const loadModules = (): void => {
   for (const moduleXmlFile of moduleXmlFiles) {
     const parser = new XMLParser({
       ignoreAttributes: false,
+      isArray: (_tagName, path) => {
+        return path === 'config.module.sequence.module'
+      },
     })
 
     const moduleXml = parser.parse(fs.readFileSync(moduleXmlFile, 'utf8'))
@@ -55,6 +61,11 @@ export const loadModules = (): void => {
         enabled: enabledModuleNames.includes(moduleXml.config.module['@_name']),
         core: moduleXmlFile.includes('/vendor/magento/'),
         vendor: moduleXmlFile.includes('/vendor/'),
+        dependencies: (moduleXml.config.module.sequence?.module || [])
+          .map((m: any) => {
+            return m['@_name']
+          })
+          .sort(),
       }
 
       const composerJsonPath = `${basePath}/${module.relativePath}/composer.json`
@@ -518,6 +529,113 @@ export const getModule = (name: string): MageModule => {
   }
 
   throw new Error(`Module ${name} not found`)
+}
+
+export const getSystemConfigs = (): MageSystemConfig[] => {
+  const configs: MageSystemConfig[] = []
+  for (const module of getModules()) {
+    const config = getModuleSystemConfig(module.fqn)
+    configs.push(config)
+  }
+
+  return configs
+}
+
+export const getModuleSystemConfig = (moduleFqn: string): MageSystemConfig => {
+  const module = getModule(moduleFqn)
+
+  const config: MageSystemConfig = {
+    module,
+    tabs: [],
+    sections: [],
+  }
+
+  // TODO: handle system.xml in subfolders
+  const systemXmlPath = `${basePath}/${module.relativePath}/etc/adminhtml/system.xml`
+  if (!fs.existsSync(systemXmlPath)) {
+    return config
+  }
+
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    isArray: (_tagName: string, path: string) => {
+      return ['config.system.tab', 'config.system.section', 'config.system.section.group', 'config.system.section.group.field'].includes(path)
+    },
+  })
+
+  const systemXml = parser.parse(fs.readFileSync(systemXmlPath, 'utf8'))
+  if (!systemXml.config || !systemXml.config.system) {
+    return config
+  }
+
+  if (systemXml.config.system.tab) {
+    for (const tab of systemXml.config.system.tab) {
+      config.tabs.push({
+        id: tab['@_id'],
+        label: tab.label,
+        translate: tab['@_translate'],
+        sortOrder: tab['@_sortOrder'] ? Number.parseInt(tab['@_sortOrder']) : undefined,
+      })
+    }
+  }
+
+  if (systemXml.config.system.section) {
+    for (const section of systemXml.config.system.section) {
+      const sectionObject: MageSystemConfigSection = {
+        id: section['@_id'],
+        label: section.label,
+        translate: section['@_translate'],
+        sortOrder: section['@_sortOrder'] ? Number.parseInt(section['@_sortOrder']) : undefined,
+        tab: section.tab,
+        // showInDefault: section['@_showInDefault'] === '1',
+        // showInWebsite: section['@_showInWebsite'] === '1',
+        // showInStore: section['@_showInStore'] === '1',
+        groups: [],
+      }
+
+      if (section.group) {
+        for (const group of section.group) {
+          const groupObject: MageSystemConfigGroup = {
+            id: group['@_id'],
+            label: group.label,
+            translate: group['@_translate'],
+            sortOrder: group['@_sortOrder'] ? Number.parseInt(group['@_sortOrder']) : undefined,
+            // showInDefault: group['@_showInDefault'] === '1',
+            // showInWebsite: group['@_showInWebsite'] === '1',
+            // showInStore: group['@_showInStore'] === '1',
+            fields: [],
+          }
+
+          if (group.field) {
+            for (const field of group.field) {
+              groupObject.fields.push({
+                id: field['@_id'],
+                path: `${sectionObject.id}/${groupObject.id}/${field['@_id']}`,
+                label: field.label,
+                type: field['@_type'],
+                comment: field.comment,
+                translate: field['@_translate'],
+                sortOrder: field['@_sortOrder'] ? Number.parseInt(field['@_sortOrder']) : undefined,
+                // showInDefault: field['@_showInDefault'] === '1',
+                // showInWebsite: field['@_showInWebsite'] === '1',
+                // showInStore: field['@_showInStore'] === '1',
+                frontendModel: field.frontend_model,
+                frontendClass: field.frontend_class,
+                backendModel: field.backend_model,
+                sourceModel: field.source_model,
+              })
+            }
+          }
+
+          sectionObject.groups.push(groupObject)
+        }
+      }
+
+      config.sections.push(sectionObject)
+    }
+  }
+
+  return config
 }
 
 export const getCommands = (namespaces: string[] = []): MageCommand[] => {

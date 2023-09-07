@@ -20,6 +20,7 @@ module.exports = {
     'object-shorthand': ['error', 'always'],
     // VUE
     'vue/multi-word-component-names': 'off',
+    'vue/no-v-html': 'off',
     'vue/valid-v-slot': ['error', {
       allowModifiers: true,
     }],

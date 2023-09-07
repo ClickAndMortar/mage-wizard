@@ -24,12 +24,14 @@
   "dependencies": {
     "@mdi/font": "^7.2.96",
     "@types/jsonpath": "^0.2.0",
+    "@types/lodash": "^4.14.198",
     "defu": "^6.1.2",
     "fast-glob": "^3.3.1",
     "fast-xml-parser": "^4.2.7",
     "handlebars": "^4.7.8",
     "jsonpath": "^1.1.1",
     "jsonpath-plus": "^7.2.0",
+    "lodash": "^4.17.21",
     "php-parser": "^3.1.5",
     "sass": "^1.66.1",
     "vuetify": "^3.3.11"

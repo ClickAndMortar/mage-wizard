@@ -2,7 +2,7 @@
   <VTable v-if="plugins?.length > 0" density="compact">
     <thead>
       <tr>
-        <th class="text-left">Class</th>
+        <th class="text-left">Affected class</th>
         <th class="text-left">Type</th>
         <th class="text-left">Methods</th>
       </tr>
@@ -17,7 +17,14 @@
         </td>
         <td>
           <code v-if="plugin.methods.length > 0">{{ plugin.methods[0] }}</code>
-          <VChip v-if="plugin.methods.length > 1" class="ml-2" size="x-small">+{{ plugin.methods.length - 1 }}</VChip>
+          <VTooltip v-if="plugin.methods.length > 1" location="top">
+            <template #activator="{ props }">
+              <VChip class="ml-2" size="x-small" v-bind="props">+{{ plugin.methods.length - 1 }}</VChip>
+            </template>
+            <div v-for="method in plugin.methods.slice(1)" :key="method">
+              <code>{{ method }}</code>
+            </div>
+          </VTooltip>
         </td>
       </tr>
     </tbody>
