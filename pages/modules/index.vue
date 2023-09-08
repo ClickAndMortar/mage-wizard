@@ -26,20 +26,51 @@
                   <VTextField v-model="filter.name" label="Name" variant="outlined" density="compact" />
                 </VCol>
                 <VCol cols="2">
-                  <VSwitch v-model="filter.disabled" :true-value="true" :false-value="false" label="Show disabled" density="compact" color="orange-darken-3" value="orange-darken-3" />
+                  <VSwitch
+                    v-model="filter.disabled"
+                    :true-value="true"
+                    :false-value="false"
+                    label="Show disabled"
+                    density="compact"
+                    color="orange-darken-3"
+                    value="orange-darken-3"
+                  />
                 </VCol>
                 <VCol cols="2">
-                  <VSwitch v-model="filter.core" :true-value="true" :false-value="false" label="Show core" density="compact" color="orange-darken-3" value="orange-darken-3" />
+                  <VSwitch
+                    v-model="filter.core"
+                    :true-value="true"
+                    :false-value="false"
+                    label="Show core"
+                    density="compact"
+                    color="orange-darken-3"
+                    value="orange-darken-3"
+                  />
                 </VCol>
                 <VCol cols="2">
-                  <VSwitch v-model="filter.vendor" :true-value="true" :false-value="false" label="Show vendor" density="compact" color="orange-darken-3" value="orange-darken-3" />
+                  <VSwitch
+                    v-model="filter.vendor"
+                    :true-value="true"
+                    :false-value="false"
+                    label="Show vendor"
+                    density="compact"
+                    color="orange-darken-3"
+                    value="orange-darken-3"
+                  />
                 </VCol>
               </VRow>
             </VCardText>
           </VCard>
         </div>
       </VExpandTransition>
-      <VDataTable v-model:items-per-page="itemsPerPage" v-model:sort-by="sortBy" density="compact" :headers="headers" :items="filteredModules" :loading="pending">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:sort-by="sortBy"
+        density="compact"
+        :headers="headers"
+        :items="filteredModules"
+        :loading="pending"
+      >
         <template #item.namespace="{ item }">
           <code>{{ item.columns.namespace }}</code>
         </template>

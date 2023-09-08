@@ -36,7 +36,10 @@ export const loadModules = (): void => {
   const ast = parser.parseCode(configPhp)
 
   // eslint-disable-next-line import/no-named-as-default-member
-  const enabledModuleNames = jsonpath.query(ast, '$.children[?(@.kind=="return")].expr.items[?(@.key.value=="modules")].value.items[?(@.value.value=="1")].key.value')
+  const enabledModuleNames = jsonpath.query(
+    ast,
+    '$.children[?(@.kind=="return")].expr.items[?(@.key.value=="modules")].value.items[?(@.value.value=="1")].key.value',
+  )
 
   // eslint-disable-next-line import/no-named-as-default-member
   const moduleXmlFiles = fg.sync([basePath + '/app/code/**/etc/module.xml', basePath + '/vendor/**/etc/module.xml'], {
@@ -737,7 +740,10 @@ export const getPlugins = (namespaces: string[] = []): MagePlugin[] => {
             if (fs.existsSync(pluginPath)) {
               const pluginAst = parser.parseCode(fs.readFileSync(pluginPath, 'utf8'))
               // eslint-disable-next-line import/no-named-as-default-member
-              const pluginMethods: string[] = jsonpath.query(pluginAst, '$.children[?(@.kind=="namespace")].children[?(@.kind=="class")].body[?(@.kind=="method")].name.name')
+              const pluginMethods: string[] = jsonpath.query(
+                pluginAst,
+                '$.children[?(@.kind=="namespace")].children[?(@.kind=="class")].body[?(@.kind=="method")].name.name',
+              )
               // Add pluginMethods starting with before, after or around to methods in magePlugin
               for (const pluginMethod of pluginMethods) {
                 if (pluginMethod.startsWith('before') || pluginMethod.startsWith('after') || pluginMethod.startsWith('around')) {

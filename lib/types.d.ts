@@ -82,6 +82,7 @@ export type MageSystemConfigField = {
   backendModel?: string;
   sourceModel?: string;
   tooltip?: string;
+  validate?: string;
   path: string; // Path to the config value Magento style, ie. 'general/store_information/name'
   default?: string;
   // TODO: many more options as child attributes + handle file path (many system.xml files possible)

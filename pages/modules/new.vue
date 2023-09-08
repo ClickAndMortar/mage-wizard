@@ -17,7 +17,15 @@
       <VCardText class="mt-4">
         <VRow>
           <VCol cols="4">
-            <VTextField v-model="module.namespace" :rules="[() => !!module.namespace || 'Namespace is required']" label="Namespace" variant="outlined" dense required autofocus />
+            <VTextField
+              v-model="module.namespace"
+              :rules="[() => !!module.namespace || 'Namespace is required']"
+              label="Namespace"
+              variant="outlined"
+              dense
+              required
+              autofocus
+            />
           </VCol>
           <VCol cols="4">
             <VTextField v-model="module.name" :rules="[() => !!module.name || 'Name is required']" label="Name" variant="outlined" dense required />

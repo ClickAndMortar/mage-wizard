@@ -15,13 +15,28 @@
                 <VBtn color="primary" size="small" flat v-bind="props">Generate<VIcon end>mdi-menu-down</VIcon></VBtn>
               </template>
               <VList>
-                <VListItem prepend-icon="mdi-console" value="new-command" :to="{ name: 'modules-name-new-command', params: { name: moduleName } }" density="compact">
+                <VListItem
+                  prepend-icon="mdi-console"
+                  value="new-command"
+                  :to="{ name: 'modules-name-new-command', params: { name: moduleName } }"
+                  density="compact"
+                >
                   <VListItemTitle>Command</VListItemTitle>
                 </VListItem>
-                <VListItem prepend-icon="mdi-power-plug-outline" value="new-plugin" :to="{ name: 'modules-name-new-command', params: { name: moduleName } }" density="compact">
+                <VListItem
+                  prepend-icon="mdi-power-plug-outline"
+                  value="new-plugin"
+                  :to="{ name: 'modules-name-new-command', params: { name: moduleName } }"
+                  density="compact"
+                >
                   <VListItemTitle>Plugin</VListItemTitle>
                 </VListItem>
-                <VListItem prepend-icon="mdi-cog-outline" value="new-plugin" :to="{ name: 'modules-name-new-edit-system-config', params: { name: moduleName } }" density="compact">
+                <VListItem
+                  prepend-icon="mdi-cog-outline"
+                  value="new-plugin"
+                  :to="{ name: 'modules-name-new-edit-system-config', params: { name: moduleName } }"
+                  density="compact"
+                >
                   <VListItemTitle>System config</VListItemTitle>
                 </VListItem>
               </VList>

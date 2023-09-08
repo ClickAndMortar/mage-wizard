@@ -19,10 +19,27 @@
       <VCardText class="mt-4">
         <VRow>
           <VCol cols="4">
-            <VTextField v-model="command.name" :rules="nameRules" label="Name" variant="outlined" hint="Example: mage-wizard:hello-world" persistent-hint dense required autofocus />
+            <VTextField
+              v-model="command.name"
+              :rules="nameRules"
+              label="Name"
+              variant="outlined"
+              hint="Example: mage-wizard:hello-world"
+              persistent-hint
+              dense
+              required
+              autofocus
+            />
           </VCol>
           <VCol cols="4">
-            <VTextField v-model="command.description" :rules="[() => !!command.description || 'Description is required']" label="Description" variant="outlined" dense required />
+            <VTextField
+              v-model="command.description"
+              :rules="[() => !!command.description || 'Description is required']"
+              label="Description"
+              variant="outlined"
+              dense
+              required
+            />
           </VCol>
           <VCol cols="4">
             <VSelect v-model="command.injects" chips label="Injects" :items="injects" item-title="label" item-value="key" multiple variant="outlined" dense />
@@ -55,7 +72,10 @@
     { key: 'scope_config', label: 'ScopeConfigInterface' },
   ]
 
-  const nameRules = [(v: any) => !!v || 'Name is required', (v: any) => (v && /^[\d:-_a-z]+$/.test(v)) || 'Name can only contain lowercase letters, numbers, dashes, colons, and underscores']
+  const nameRules = [
+    (v: any) => !!v || 'Name is required',
+    (v: any) => (v && /^[\d:-_a-z]+$/.test(v)) || 'Name can only contain lowercase letters, numbers, dashes, colons, and underscores',
+  ]
 
   const creatingCommand = ref(false)
 

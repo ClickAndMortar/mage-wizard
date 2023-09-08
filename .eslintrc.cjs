@@ -19,6 +19,7 @@ module.exports = {
     'comma-dangle': ['error', 'always-multiline'],
     'object-shorthand': ['error', 'always'],
     // VUE
+    'vue/no-multiple-template-root': 'off',
     'vue/multi-word-component-names': 'off',
     'vue/no-v-html': 'off',
     'vue/valid-v-slot': ['error', {
