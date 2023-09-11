@@ -30,7 +30,7 @@
           <VBtn icon size="x-small" flat @click="showFieldDialog(field)">
             <VIcon size="small">mdi-eye-outline</VIcon>
           </VBtn>
-          <VBtn icon size="x-small" flat @click="copyToClipboard(field.id)">
+          <VBtn icon size="x-small" flat :to="{ name: 'modules-name-new-edit-system-config', params: { name: moduleName }, query: { path: field.path } }">
             <VIcon size="small">mdi-pencil</VIcon>
           </VBtn>
         </td>
@@ -79,7 +79,7 @@
             <tr>
               <td>Sort order</td>
               <td>
-                <code>{{ currentConfigField.sortOrder }}</code>
+                <code v-if="currentConfigField.sortOrder !== undefined">{{ currentConfigField.sortOrder }}</code>
               </td>
             </tr>
             <tr v-if="currentConfigField.comment">
@@ -132,6 +132,10 @@
       type: Array as PropType<MageSystemConfigField[]>,
       required: true,
       default: () => [],
+    },
+    moduleName: {
+      type: String,
+      required: true,
     },
   })
 

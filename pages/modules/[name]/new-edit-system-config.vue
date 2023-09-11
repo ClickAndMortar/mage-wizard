@@ -1,5 +1,5 @@
 <template>
-  <VForm ref="form" @submit="createConfig">
+  <VForm ref="form" @submit="saveConfig">
     <VCard elevation="3">
       <VCardTitle>
         <VRow>
@@ -9,10 +9,10 @@
             <VIcon>mdi-slash-forward</VIcon>
             <NuxtLink class="ml-1" :to="{ name: 'modules-name', params: { name: module?.fqn } }">{{ module?.fqn }}</NuxtLink>
             <VIcon>mdi-slash-forward</VIcon>
-            Create config
+            {{ editing ? 'Edit' : 'Create' }} config
           </VCol>
           <VCol cols="8" class="text-right">
-            <VBtn color="success" flat size="small" type="submit" :loading="creatingConfig">Create config</VBtn>
+            <VBtn color="success" flat size="small" type="submit" :loading="savingConfig">{{ editing ? 'Update' : 'Create' }} config</VBtn>
           </VCol>
         </VRow>
       </VCardTitle>
@@ -31,6 +31,8 @@
               :hide-no-data="false"
               eager
               :auto-select-first="false"
+              :rules="sectionRules"
+              :disabled="editing"
               @update:focused="(focused) => (sectionFocused = focused)"
             >
               <template #append-inner>
@@ -59,7 +61,8 @@
               :hide-no-data="false"
               eager
               :auto-select-first="false"
-              :disabled="!config.section"
+              :disabled="!config.section || editing"
+              :rules="groupRules"
               @update:focused="(focused) => (groupFocused = focused)"
             >
               <template #append-inner>
@@ -76,7 +79,7 @@
             </VCombobox>
           </VCol>
           <VCol cols="4">
-            <VTextField v-model="config.id" :rules="idRules" label="ID" variant="outlined" validate-on="lazy" />
+            <VTextField v-model="config.id" :rules="idRules" :disabled="editing" label="ID" variant="outlined" validate-on="lazy" />
           </VCol>
         </VRow>
         <VRow>
@@ -87,7 +90,7 @@
             <VSelect v-model="config.scopes" :items="scopeItems" item-value="key" item-title="label" label="Scopes" variant="outlined" multiple chips />
           </VCol>
           <VCol cols="4">
-            <VTextField v-model="config.comment" label="Comment" variant="outlined" hint="Displayed below config field" />
+            <VTextField v-model="config.label" label="Label" variant="outlined" />
           </VCol>
           <VCol cols="4">
             <VCombobox
@@ -124,6 +127,9 @@
           <VCol cols="4">
             <VSelect v-model="config.validators" :items="validatorItems" label="Validators" variant="outlined" multiple chips />
           </VCol>
+          <VCol cols="4">
+            <VTextField v-model="config.comment" label="Comment" variant="outlined" hint="Displayed below config field" />
+          </VCol>
         </VRow>
       </VCardText>
     </VCard>
@@ -133,25 +139,36 @@
   import { VForm } from 'vuetify/components'
   // eslint-disable-next-line import/named
   import { sortedUniqBy } from 'lodash'
-  import type { MageModule, MageSystemConfig, MageSystemConfigFieldNew, MageSystemConfigGroup, MageSystemConfigSection } from '~/lib/types'
+  import type {
+    MageModule,
+    MageSystemConfig,
+    MageNewSystemConfigField,
+    MageSystemConfigGroup,
+    MageSystemConfigSection,
+    MageSystemConfigField,
+  } from '~/lib/types'
 
   const route = useRoute()
+
+  const editing = route.query.path !== null
 
   useHead({
     title: 'Create config',
   })
 
-  const config: Ref<MageSystemConfigFieldNew> = ref({
+  const config: Ref<MageNewSystemConfigField> = ref({
     id: '',
     type: 'text',
     section: '',
     group: '',
     scopes: ['default'],
+    label: '',
     comment: '',
     sourceModel: '',
     backendModel: '',
     frontendModel: '',
     validators: [],
+    module: String(route.params.name),
   })
 
   const scopeItems = [
@@ -185,12 +202,6 @@
     'validate-zero-or-greater',
   ]
 
-  // TODO: add rule to check if value already exists
-  const idRules = [
-    (v: any) => !!v || 'ID is required',
-    (v: any) => (v && /^[\d_a-z]+$/.test(v)) || 'ID can only contain lowercase letters, numbers and underscores',
-  ]
-
   const isValidPhpClassName = (name: string) => {
     if (!name) {
       return true
@@ -199,12 +210,19 @@
     return /^[A-Z\\][\w\\]+[\dA-Za-z]$/.test(name)
   }
 
+  // TODO: add rule to check if value already exists
+  const idRules = [
+    (v: any) => !!v || 'ID is required',
+    (v: any) => (v && /^[\d_a-z]+$/.test(v)) || 'ID can only contain lowercase letters, numbers and underscores',
+  ]
+  const sectionRules = [(v: any) => !!v || 'Section is required']
+  const groupRules = [(v: any) => !!v || 'Group is required']
   const sourceModelRules = [(v: any) => isValidPhpClassName(v) || 'Invalid PHP class name']
   const backendModelRules = [(v: any) => isValidPhpClassName(v) || 'Invalid PHP class name']
   const frontendModelRules = [(v: any) => isValidPhpClassName(v) || 'Invalid PHP class name']
 
   const form = ref<VForm>()
-  const creatingConfig = ref(false)
+  const savingConfig = ref(false)
   const sectionSearch = ref('')
   const groupSearch = ref('')
   const sourceModelSearch = ref('')
@@ -213,6 +231,33 @@
 
   const { data: module } = await useFetch<MageModule>(`/api/modules/${route.params.name}`)
   const { data: moduleConfigs } = await useFetch<MageSystemConfig[]>(`/api/modules/system-config`)
+
+  if (editing) {
+    const { data: configField } = await useFetch<MageSystemConfigField>(`/api/modules/${route.params.name}/config/field?path=${route.query.path}`)
+    if (configField.value) {
+      const [sectionId, groupId, fieldId] = configField.value.path.split('/')
+      config.value.section = sectionId
+      config.value.group = groupId
+      config.value.id = fieldId
+      config.value.type = configField.value.type
+      config.value.label = configField.value.label
+      config.value.comment = configField.value.comment
+      config.value.sourceModel = configField.value.sourceModel
+      config.value.backendModel = configField.value.backendModel
+      config.value.frontendModel = configField.value.frontendModel
+      config.value.validators = configField.value.validate?.split(' ') || []
+      config.value.scopes = []
+      if (configField.value.showInDefault) {
+        config.value.scopes.push('default')
+      }
+      if (configField.value.showInWebsite) {
+        config.value.scopes.push('websites')
+      }
+      if (configField.value.showInStore) {
+        config.value.scopes.push('stores')
+      }
+    }
+  }
 
   const sectionItems = computed(() => {
     if (!moduleConfigs.value) {
@@ -276,7 +321,7 @@
 
   watch(() => config.value.type, onTypeChange)
 
-  const createConfig = async (event: Event) => {
+  const saveConfig = async (event: Event) => {
     event.preventDefault()
     if (!form.value) {
       return
@@ -288,9 +333,10 @@
       return
     }
 
-    creatingConfig.value = true
+    savingConfig.value = true
 
-    fetch(`/api/modules/${route.params.name}/config`, {
+    // TODO: handle update using PUT
+    fetch(`/api/modules/${route.params.name}/config/field`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -299,13 +345,13 @@
     })
       .then(() => {
         useNotification().notify({ message: 'Config successfully created', type: 'success' })
-        // navigateTo(`/modules/${module?.value?.fqn}`)
+        navigateTo(`/modules/${module?.value?.fqn}`)
       })
       .catch((error) => {
-        alert(error)
+        useNotification().notify({ message: error.message, type: 'error' })
       })
       .finally(() => {
-        creatingConfig.value = false
+        savingConfig.value = false
       })
   }
 </script>

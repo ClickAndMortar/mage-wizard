@@ -54,7 +54,7 @@
           <VProgressCircular v-if="pendingConfig" size="24" color="grey" indeterminate class="ml-2" />
         </VExpansionPanelTitle>
         <VExpansionPanelText>
-          <MageModuleConfigs :fields="configFields" />
+          <MageModuleConfigs :fields="configFields" :module-name="moduleName" />
         </VExpansionPanelText>
       </VExpansionPanel>
       <VExpansionPanel :disabled="plugins && !plugins?.length">

@@ -61,6 +61,7 @@ export type MageSystemConfigGroup = {
   canRestore?: string;
   type?: string;
   advanced?: boolean;
+  resource?: string;
   // TODO: many more options as child attributes + handle file path (many system.xml files possible)
   fields: MageSystemConfigField[];
 }
@@ -84,6 +85,7 @@ export type MageSystemConfigField = {
   sourceModel?: string;
   tooltip?: string;
   validate?: string;
+  resource?: string;
   path: string; // Path to the config value Magento style, ie. 'general/store_information/name'
   default?: string;
   // TODO: many more options as child attributes + handle file path (many system.xml files possible)
@@ -95,7 +97,8 @@ export type MageSystemConfig = {
   sections: MageSystemConfigSection[];
 }
 
-export type MageSystemConfigFieldNew = Omit<MageSystemConfigField, 'path' | 'validate' | 'showInWebsite' | 'showInStore' | 'showInDefault'> & {
+export type MageNewSystemConfigField = Omit<MageSystemConfigField, 'path' | 'validate' | 'showInWebsite' | 'showInStore' | 'showInDefault'> & {
+  module: string;
   group: string;
   section: string;
   validators: string[];
