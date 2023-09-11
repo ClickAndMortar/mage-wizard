@@ -17,6 +17,7 @@ import type {
   MageModule,
   MageNewCommand,
   MagePlugin,
+  MageSystemConfigField,
 } from '../types'
 import parser from '../php-parser-engine'
 import generateComposerJson from '../generator/module-composer-json'
@@ -590,9 +591,10 @@ export const getModuleSystemConfig = (moduleFqn: string): MageSystemConfig => {
         translate: section['@_translate'],
         sortOrder: section['@_sortOrder'] ? Number.parseInt(section['@_sortOrder']) : undefined,
         tab: section.tab,
-        // showInDefault: section['@_showInDefault'] === '1',
-        // showInWebsite: section['@_showInWebsite'] === '1',
-        // showInStore: section['@_showInStore'] === '1',
+        resource: section.resource,
+        showInDefault: ['0', '1'].includes(section['@_showInDefault']) ? section['@_showInDefault'] === '1' : undefined,
+        showInWebsite: ['0', '1'].includes(section['@_showInWebsite']) ? section['@_showInWebsite'] === '1' : undefined,
+        showInStore: ['0', '1'].includes(section['@_showInStore']) ? section['@_showInStore'] === '1' : undefined,
         groups: [],
       }
 
@@ -602,16 +604,17 @@ export const getModuleSystemConfig = (moduleFqn: string): MageSystemConfig => {
             id: group['@_id'],
             label: group.label,
             translate: group['@_translate'],
+            type: group['@_type'],
             sortOrder: group['@_sortOrder'] ? Number.parseInt(group['@_sortOrder']) : undefined,
-            // showInDefault: group['@_showInDefault'] === '1',
-            // showInWebsite: group['@_showInWebsite'] === '1',
-            // showInStore: group['@_showInStore'] === '1',
+            showInDefault: ['0', '1'].includes(group['@_showInDefault']) ? group['@_showInDefault'] === '1' : undefined,
+            showInWebsite: ['0', '1'].includes(group['@_showInWebsite']) ? group['@_showInWebsite'] === '1' : undefined,
+            showInStore: ['0', '1'].includes(group['@_showInStore']) ? group['@_showInStore'] === '1' : undefined,
             fields: [],
           }
 
           if (group.field) {
             for (const field of group.field) {
-              groupObject.fields.push({
+              const fieldObject: MageSystemConfigField = {
                 id: field['@_id'],
                 path: `${sectionObject.id}/${groupObject.id}/${field['@_id']}`,
                 label: field.label,
@@ -619,14 +622,29 @@ export const getModuleSystemConfig = (moduleFqn: string): MageSystemConfig => {
                 comment: field.comment,
                 translate: field['@_translate'],
                 sortOrder: field['@_sortOrder'] ? Number.parseInt(field['@_sortOrder']) : undefined,
-                // showInDefault: field['@_showInDefault'] === '1',
-                // showInWebsite: field['@_showInWebsite'] === '1',
-                // showInStore: field['@_showInStore'] === '1',
+                showInDefault: ['0', '1'].includes(field['@_showInDefault']) ? field['@_showInDefault'] === '1' : undefined,
+                showInWebsite: ['0', '1'].includes(field['@_showInWebsite']) ? field['@_showInWebsite'] === '1' : undefined,
+                showInStore: ['0', '1'].includes(field['@_showInStore']) ? field['@_showInStore'] === '1' : undefined,
                 frontendModel: field.frontend_model,
                 frontendClass: field.frontend_class,
                 backendModel: field.backend_model,
                 sourceModel: field.source_model,
-              })
+                validate: field.validate,
+              }
+
+              if (['0', '1'].includes(field['@_showInDefault'])) {
+                fieldObject.showInDefault = field['@_showInDefault'] === '1'
+              }
+
+              if (['0', '1'].includes(field['@_showInWebsite'])) {
+                fieldObject.showInWebsite = field['@_showInWebsite'] === '1'
+              }
+
+              if (['0', '1'].includes(field['@_showInStore'])) {
+                fieldObject.showInStore = field['@_showInStore'] === '1'
+              }
+
+              groupObject.fields.push(fieldObject)
             }
           }
 

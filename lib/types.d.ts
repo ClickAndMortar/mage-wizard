@@ -44,6 +44,7 @@ export type MageSystemConfigSection = {
   type?: string;
   advanced?: boolean;
   translate?: string;
+  resource?: string;
   groups: MageSystemConfigGroup[];
   // TODO: handle file path (many system.xml files possible)
 }
@@ -94,9 +95,11 @@ export type MageSystemConfig = {
   sections: MageSystemConfigSection[];
 }
 
-export type MageSystemConfigFieldNew = Omit<MageSystemConfigField, 'path'> & {
+export type MageSystemConfigFieldNew = Omit<MageSystemConfigField, 'path' | 'validate' | 'showInWebsite' | 'showInStore' | 'showInDefault'> & {
   group: string;
   section: string;
+  validators: string[];
+  scopes: string[];
 }
 
 export type MageCommand = {

@@ -114,30 +114,15 @@
             </VCombobox>
           </VCol>
           <VCol cols="4">
-            <VCombobox
-              v-model="config.backendModel"
-              v-model:search="backendModelSearch"
-              :items="backendModelItems"
-              label="Backend model"
-              variant="outlined"
-              :hide-no-data="false"
-              eager
-              :auto-select-first="false"
-              :rules="backendModelRules"
-              clearable
-            >
-              <template #no-data>
-                <VListItem>
-                  <VListItemTitle>
-                    No results matching "<strong>{{ backendModelSearch }}</strong
-                    >". Press <kbd>enter</kbd> to create a new one
-                  </VListItemTitle>
-                </VListItem>
-              </template>
-            </VCombobox>
+            <VTextField v-model="config.backendModel" label="Backend model" variant="outlined" :rules="backendModelRules" clearable />
           </VCol>
           <VCol cols="4">
-            <VTextField v-model="config.frontendModel" label="Frontend model" variant="outlined" :rules="frontendModelRules" />
+            <VTextField v-model="config.frontendModel" label="Frontend model" variant="outlined" :rules="frontendModelRules" clearable />
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="4">
+            <VSelect v-model="config.validators" :items="validatorItems" label="Validators" variant="outlined" multiple chips />
           </VCol>
         </VRow>
       </VCardText>
@@ -186,11 +171,18 @@
     'Magento\\Directory\\Model\\Config\\Source\\WeightUnit',
   ]
 
-  const backendModelItems = [
-    'Magento\\Config\\Model\\Config\\Backend\\Encrypted',
-    'Magento\\Config\\Model\\Config\\Backend\\Admin\\Custom',
-    'Magento\\Config\\Model\\Config\\Backend\\Admin\\Custom\\ArraySerialized',
-    'Magento\\Config\\Model\\Config\\Backend\\Admin\\Custom\\Serialized',
+  const validatorItems = [
+    'required-entry',
+    'validate-alphanumeric',
+    'validate-digits',
+    'validate-email',
+    'validate-emails',
+    'validate-no-empty',
+    'validate-no-html-tags',
+    'validate-number',
+    'validate-phone',
+    'validate-url',
+    'validate-zero-or-greater',
   ]
 
   // TODO: add rule to check if value already exists
@@ -216,7 +208,6 @@
   const sectionSearch = ref('')
   const groupSearch = ref('')
   const sourceModelSearch = ref('')
-  const backendModelSearch = ref('')
   const sectionFocused = ref(false)
   const groupFocused = ref(false)
 
