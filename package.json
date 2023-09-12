@@ -1,6 +1,22 @@
 {
-  "name": "nuxt-app",
-  "private": true,
+  "name": "@clickandmortar/mage-wizard",
+  "description": "Web UI wizard for Magento 2 providing useful features: module creation, config management, etc.",
+  "version": "0.1.4",
+  "bin": {
+    "mage-wizard": "dist/server/index.mjs"
+  },
+  "author": {
+    "name": "Michael Bouvy",
+    "email": "michael.bouvy@clickandmortar.fr",
+    "url": "https://www.clickandmortar.fr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ClickAndMortar/mage-wizard"
+  },
+  "homepage": "https://github.com/ClickAndMortar/mage-wizard",
+  "license": "MIT",
+  "keywords": ["magento", "wizard", "adobe", "commerce"],
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",

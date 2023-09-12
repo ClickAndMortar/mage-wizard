@@ -3,15 +3,40 @@
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) (`18.x` or newer)
+
+## Usage
+
+### Installing globally using npm
+
+```shell
+npm install -g @clickandmortar/mage-wizard
+
+mage-wizard
+```
+
+Open `http://localhost:3000` in your browser.
+
+### Using npx
+
+```shell
+npx @clickandmortar/mage-wizard
+```
+
+Open `http://localhost:3000` in your browser.
+
+## Development
+
+### Requirements
+
 - [pnpm](https://pnpm.io/) (v6 or newer)
 
-## Setup
+### Setup
 
 ```bash
 pnpm install
 ```
 
-## Development server
+### Development server
 
 Start the development server on `http://localhost:3000`:
 
@@ -19,16 +44,11 @@ Start the development server on `http://localhost:3000`:
 pnpm run dev
 ```
 
-## Production
+## Build
 
-Build the application for production:
-
-```bash
-pnpm run build
-```
-
-Locally preview production build:
-
-```bash
-pnpm run preview
-```
+* Bump version in `package.json`
+* `pnpm run build`
+* Remove `scripts` and `devDependencies` from `package.json`
+* Add `#!/usr/bin/env node` at the top of `dist/server/index.mjs` and make it executable (`chmod +x dist/server/index.mjs`)
+* `npm pack`
+* `npm publish`
