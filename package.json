@@ -32,6 +32,7 @@
     "jsonpath": "^1.1.1",
     "jsonpath-plus": "^7.2.0",
     "lodash": "^4.17.21",
+    "node-cache": "^5.1.2",
     "php-parser": "^3.1.5",
     "sass": "^1.66.1",
     "vuetify": "^3.3.11"

@@ -183,3 +183,8 @@ export type Notification = {
 }
 
 export type NotificationType = 'success' | 'info' | 'warning' | 'error';
+
+export type MageWizardSettings = {
+  version: string;
+  path: string;
+}
