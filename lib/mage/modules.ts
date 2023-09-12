@@ -24,17 +24,15 @@ import generateComposerJson from '../generator/module-composer-json'
 import generateRegistrationPhp from '../generator/module-registration-php'
 import generateModuleXml from '../generator/module-module-xml'
 import generateCommand from '../generator/module-command'
-import useMageRoot from '~/composables/use-mage-root'
 import getConfigXml from '~/lib/mage/modules/get-config-xml'
-
-const basePath = useMageRoot()
+import getSettings from '~/lib/settings'
 
 let allModules: MageModule[] = []
 
 export const loadModules = (): void => {
   const modules: MageModule[] = []
 
-  const configPhp = fs.readFileSync(`${basePath}/app/etc/config.php`, 'utf8')
+  const configPhp = fs.readFileSync(`${getSettings()?.path}/app/etc/config.php`, 'utf8')
   const ast = parser.parseCode(configPhp)
 
   // eslint-disable-next-line import/no-named-as-default-member
@@ -44,7 +42,7 @@ export const loadModules = (): void => {
   )
 
   // eslint-disable-next-line import/no-named-as-default-member
-  const moduleXmlFiles = fg.sync([basePath + '/app/code/**/etc/module.xml', basePath + '/vendor/**/etc/module.xml'], {
+  const moduleXmlFiles = fg.sync([getSettings()?.path + '/app/code/**/etc/module.xml', getSettings()?.path + '/vendor/**/etc/module.xml'], {
     ignore: ['**/dev/tests/**'],
   })
 
@@ -62,7 +60,7 @@ export const loadModules = (): void => {
         name: moduleXml.config.module['@_name'].split('_')[1],
         namespace: moduleXml.config.module['@_name'].split('_')[0],
         fqn: moduleXml.config.module['@_name'],
-        relativePath: moduleXmlFile.replace(`${basePath}/`, '').replace('/etc/module.xml', ''),
+        relativePath: moduleXmlFile.replace(`${getSettings()?.path}/`, '').replace('/etc/module.xml', ''),
         enabled: enabledModuleNames.includes(moduleXml.config.module['@_name']),
         core: moduleXmlFile.includes('/vendor/magento/'),
         vendor: moduleXmlFile.includes('/vendor/'),
@@ -73,7 +71,7 @@ export const loadModules = (): void => {
           .sort(),
       }
 
-      const composerJsonPath = `${basePath}/${module.relativePath}/composer.json`
+      const composerJsonPath = `${getSettings()?.path}/${module.relativePath}/composer.json`
 
       if (fs.existsSync(composerJsonPath)) {
         const composerJson = JSON.parse(fs.readFileSync(composerJsonPath, 'utf8'))
@@ -112,7 +110,7 @@ export const createModule = (module: MageModule): void => {
     module.fqn = `${namespace}_${name}`
   }
 
-  const modulePath = `${basePath}/app/code/${namespace}/${name}`
+  const modulePath = `${getSettings()?.path}/app/code/${namespace}/${name}`
   fs.mkdirSync(modulePath, { recursive: true })
   fs.mkdirSync(`${modulePath}/etc`, { recursive: true })
   fs.writeFileSync(`${modulePath}/composer.json`, generateComposerJson(module))
@@ -124,7 +122,7 @@ export const createModule = (module: MageModule): void => {
 
 export const createCommand = (command: MageNewCommand): void => {
   const module = getModule(command.module)
-  const modulePath = `${basePath}/${module.relativePath}`
+  const modulePath = `${getSettings()?.path}/${module.relativePath}`
 
   const commandClassName = command.name
     .split(':')
@@ -363,7 +361,7 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
     virtualTypes: [],
   }
 
-  const path = `${basePath}/${module.relativePath}/etc/di.xml`
+  const path = `${getSettings()?.path}/${module.relativePath}/etc/di.xml`
   if (!fs.existsSync(path)) {
     return config
   }
@@ -512,7 +510,7 @@ export const getDiXml = (module: MageModule): MageDiXmlConfig => {
 }
 
 export const getClassFilePath = (module: MageModule, classFqn: string): string => {
-  return `${basePath}/${module.relativePath}/${classFqn.split('\\').slice(2).join('/')}.php`
+  return `${getSettings()?.path}/${module.relativePath}/${classFqn.split('\\').slice(2).join('/')}.php`
 }
 
 export const getNamespaces = (): string[] => {
@@ -556,7 +554,7 @@ export const getModuleSystemConfig = (moduleFqn: string): MageSystemConfig => {
   }
 
   // TODO: handle system.xml in subfolders
-  const systemXmlPath = `${basePath}/${module.relativePath}/etc/adminhtml/system.xml`
+  const systemXmlPath = `${getSettings()?.path}/${module.relativePath}/etc/adminhtml/system.xml`
   if (!fs.existsSync(systemXmlPath)) {
     return config
   }
@@ -752,7 +750,7 @@ export const getPlugins = (namespaces: string[] = []): MagePlugin[] => {
             disabled: plugin.disabled,
             sortOrder: plugin.sortOrder,
             methods: [],
-            diXmlPath: `${basePath}/${module.relativePath}/etc/di.xml`,
+            diXmlPath: `${getSettings()?.path}/${module.relativePath}/etc/di.xml`,
             diXmlLine: 0, // TODO
           }
 

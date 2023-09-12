@@ -264,9 +264,12 @@
       config.value.sourceModel = configField.value.sourceModel
       config.value.backendModel = configField.value.backendModel
       config.value.frontendModel = configField.value.frontendModel
+      config.value.frontendClass = configField.value.frontendClass
       config.value.validators = configField.value.validate?.split(' ') || []
-      config.value.scopes = []
       config.value.default = configField.value.default
+      config.value.sortOrder = configField.value.sortOrder || 0
+      config.value.resource = configField.value.resource
+      config.value.scopes = []
       if (configField.value.showInDefault) {
         config.value.scopes.push('default')
       }

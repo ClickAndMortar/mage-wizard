@@ -35,6 +35,7 @@
     "node-cache": "^5.1.2",
     "php-parser": "^3.1.5",
     "sass": "^1.66.1",
+    "sync-disk-cache": "^2.1.0",
     "vuetify": "^3.3.11"
   }
 }

@@ -1,5 +1,6 @@
-import NodeCache from 'node-cache'
+// @ts-ignore
+import DiskCache from 'sync-disk-cache'
 
-const cache = new NodeCache()
+const cache = new DiskCache('mage-wizard')
 
 export default cache

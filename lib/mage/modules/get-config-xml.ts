@@ -1,16 +1,14 @@
 import fs from 'node:fs'
 import { XMLParser } from 'fast-xml-parser'
 import type { MageConfigXml, MageModule } from '~/lib/types'
-import useMageRoot from '~/composables/use-mage-root'
-
-const basePath = useMageRoot()
+import getSettings from '~/lib/settings'
 
 export default function (module: MageModule): MageConfigXml {
   const config: MageConfigXml = {
     default: {},
   }
 
-  const configXmlPath = `${basePath}/${module.relativePath}/etc/config.xml`
+  const configXmlPath = `${getSettings()?.path}/${module.relativePath}/etc/config.xml`
   if (!fs.existsSync(configXmlPath)) {
     return config
   }

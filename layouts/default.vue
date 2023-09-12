@@ -83,6 +83,21 @@
     version: '',
   })
 
+  onBeforeMount(async () => {
+    const { data: remoteSettings, pending } = await useFetch<MageWizardSettings>('/api/settings')
+
+    watch(pending, (pending) => {
+      loadingSettings.value = pending
+    })
+
+    if (!remoteSettings.value) {
+      settingsDialog.value = true
+      return
+    }
+
+    settings.value = remoteSettings.value
+  })
+
   const requiredRule = (v: string) => !!v || 'This field is required'
 
   const magentoVersionItems = ['2.3.x', '2.4.3', '2.4.4', '2.4.5', '2.4.6', '2.4.7']
