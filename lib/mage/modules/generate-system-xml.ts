@@ -37,9 +37,9 @@ export default (config: MageSystemConfig): string => {
       '@_showInDefault': section.showInDefault === undefined ? undefined : boolToZeroOne(section.showInDefault),
       '@_showInWebsite': section.showInWebsite === undefined ? undefined : boolToZeroOne(section.showInWebsite),
       '@_showInStore': section.showInStore === undefined ? undefined : boolToZeroOne(section.showInStore),
-      label: section.label,
+      label: section.label || undefined,
       tab: section.tab,
-      resource: section.resource,
+      resource: section.resource || undefined,
       group: [],
     }
 
@@ -52,8 +52,8 @@ export default (config: MageSystemConfig): string => {
           '@_showInDefault': group.showInDefault === undefined ? undefined : boolToZeroOne(group.showInDefault),
           '@_showInWebsite': group.showInWebsite === undefined ? undefined : boolToZeroOne(group.showInWebsite),
           '@_showInStore': group.showInStore === undefined ? undefined : boolToZeroOne(group.showInStore),
-          label: group.label,
-          // resource: group.resource,
+          label: group.label || undefined,
+          resource: group.resource || undefined,
           field: [],
         }
 
@@ -61,21 +61,21 @@ export default (config: MageSystemConfig): string => {
           for (const field of group.fields) {
             const fieldObject: any = {
               '@_id': field.id,
-              '@_translate': field.translate,
+              '@_translate': field.translate || undefined,
               '@_type': field.type,
               '@_sortOrder': field.sortOrder,
               '@_showInDefault': field.showInDefault === undefined ? undefined : boolToZeroOne(field.showInDefault),
               '@_showInWebsite': field.showInWebsite === undefined ? undefined : boolToZeroOne(field.showInWebsite),
               '@_showInStore': field.showInStore === undefined ? undefined : boolToZeroOne(field.showInStore),
               label: field.label || undefined,
-              // resource: field.resource,
-              comment: field.comment || undefined,
+              resource: field.resource || undefined,
+              comment: field.comment === undefined ? undefined : wrapInCdataIfNeeded(field.comment),
               frontend_model: field.frontendModel || undefined,
               frontend_class: field.frontendClass || undefined,
               backend_model: field.backendModel || undefined,
               source_model: field.sourceModel || undefined,
               tooltip: field.tooltip || undefined,
-              validate: field.validate,
+              validate: field.validate || undefined,
             }
 
             groupObject.field.push(fieldObject)
@@ -93,7 +93,19 @@ export default (config: MageSystemConfig): string => {
     ignoreAttributes: false,
     format: true,
     suppressEmptyNode: true,
+    indentBy: '    ',
   })
 
   return builder.build(systemXmlObject)
+}
+
+const wrapInCdataIfNeeded = (input: string): string => {
+  // TODO: fix this as CDATA tags are incorrectly escaped when written to file
+  return input
+
+  if (input.includes('<') || input.includes('>')) {
+    return `<![CDATA[${input}]]>`
+  }
+
+  return input
 }

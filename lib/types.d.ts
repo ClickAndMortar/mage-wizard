@@ -159,6 +159,22 @@ export type MageDiXmlConfig = {
   preferences?: MageDiXmlPreference[];
 }
 
+export type MageConfigXmlFieldScope = {
+  [key: string]: string;
+}
+
+export type MageConfigXmlGroupScope = {
+  [key: string]: MageConfigXmlFieldScope;
+}
+
+export type MageConfigXmlSectionScope = {
+  [key: string]: MageConfigXmlGroupScope;
+}
+
+export type MageConfigXml = {
+  default: MageConfigXmlSectionScope;
+}
+
 export type Notification = {
   title?: string;
   message: string;

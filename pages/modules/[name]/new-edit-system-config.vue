@@ -125,10 +125,25 @@
         </VRow>
         <VRow>
           <VCol cols="4">
+            <VTextField v-model="config.frontendClass" label="Frontend class" variant="outlined" />
+          </VCol>
+          <VCol cols="4">
             <VSelect v-model="config.validators" :items="validatorItems" label="Validators" variant="outlined" multiple chips />
           </VCol>
           <VCol cols="4">
             <VTextField v-model="config.comment" label="Comment" variant="outlined" hint="Displayed below config field" />
+          </VCol>
+        </VRow>
+        <VRow>
+          <VCol cols="4">
+            <!-- TODO: should be a combobox -->
+            <VTextField v-model="config.resource" label="ACL Resource" variant="outlined" />
+          </VCol>
+          <VCol cols="4">
+            <VTextField v-model="config.sortOrder" type="number" label="Sort order" variant="outlined" />
+          </VCol>
+          <VCol cols="4">
+            <VTextField v-model="config.default" label="Default value" variant="outlined" hint="Stored in etc/config.xml" />
           </VCol>
         </VRow>
       </VCardText>
@@ -150,10 +165,10 @@
 
   const route = useRoute()
 
-  const editing = route.query.path !== null
+  const editing: boolean = !!route.query.path && route.query.path.length > 0
 
   useHead({
-    title: 'Create config',
+    title: `${editing ? 'Edit' : 'Create'} config`,
   })
 
   const config: Ref<MageNewSystemConfigField> = ref({
@@ -167,14 +182,18 @@
     sourceModel: '',
     backendModel: '',
     frontendModel: '',
+    frontendClass: '',
+    sortOrder: 0,
+    resource: '',
     validators: [],
+    default: '',
     module: String(route.params.name),
   })
 
   const scopeItems = [
     { key: 'default', label: 'Default' },
-    { key: 'websites', label: 'Websites' },
-    { key: 'stores', label: 'Stores' },
+    { key: 'website', label: 'Website' },
+    { key: 'store', label: 'Store' },
   ]
 
   const sourceModelItems = [
@@ -247,14 +266,15 @@
       config.value.frontendModel = configField.value.frontendModel
       config.value.validators = configField.value.validate?.split(' ') || []
       config.value.scopes = []
+      config.value.default = configField.value.default
       if (configField.value.showInDefault) {
         config.value.scopes.push('default')
       }
       if (configField.value.showInWebsite) {
-        config.value.scopes.push('websites')
+        config.value.scopes.push('website')
       }
       if (configField.value.showInStore) {
-        config.value.scopes.push('stores')
+        config.value.scopes.push('store')
       }
     }
   }
@@ -335,16 +355,20 @@
 
     savingConfig.value = true
 
-    // TODO: handle update using PUT
-    fetch(`/api/modules/${route.params.name}/config/field`, {
-      method: 'POST',
+    let endpoint = `/api/modules/${route.params.name}/config/field`
+    if (editing) {
+      endpoint += `?path=${route.query.path}`
+    }
+
+    fetch(endpoint, {
+      method: editing ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(config.value),
     })
       .then(() => {
-        useNotification().notify({ message: 'Config successfully created', type: 'success' })
+        useNotification().notify({ message: `Config successfully ${editing ? 'updated' : 'created'}`, type: 'success' })
         navigateTo(`/modules/${module?.value?.fqn}`)
       })
       .catch((error) => {

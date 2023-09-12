@@ -44,7 +44,6 @@
           </VCol>
         </VRow>
       </VCardTitle>
-      <VCardText> Description </VCardText>
     </VCard>
     <VExpansionPanels variant="accordion" class="mt-4">
       <VExpansionPanel :disabled="config && configFieldCount === 0">

@@ -25,6 +25,7 @@ import generateRegistrationPhp from '../generator/module-registration-php'
 import generateModuleXml from '../generator/module-module-xml'
 import generateCommand from '../generator/module-command'
 import useMageRoot from '~/composables/use-mage-root'
+import getConfigXml from '~/lib/mage/modules/get-config-xml'
 
 const basePath = useMageRoot()
 
@@ -560,6 +561,8 @@ export const getModuleSystemConfig = (moduleFqn: string): MageSystemConfig => {
     return config
   }
 
+  const configXml = getConfigXml(module)
+
   const parser = new XMLParser({
     ignoreAttributes: false,
     isArray: (_tagName: string, path: string) => {
@@ -642,6 +645,15 @@ export const getModuleSystemConfig = (moduleFqn: string): MageSystemConfig => {
 
               if (['0', '1'].includes(field['@_showInStore'])) {
                 fieldObject.showInStore = field['@_showInStore'] === '1'
+              }
+
+              if (
+                configXml.default &&
+                configXml.default[sectionObject.id] &&
+                configXml.default[sectionObject.id][groupObject.id] &&
+                configXml.default[sectionObject.id][groupObject.id][fieldObject.id]
+              ) {
+                fieldObject.default = configXml.default[sectionObject.id][groupObject.id][fieldObject.id]
               }
 
               groupObject.fields.push(fieldObject)
