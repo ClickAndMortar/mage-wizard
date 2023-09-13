@@ -21,5 +21,6 @@ export default defineNuxtConfig({
     output: {
       dir: path.join(__dirname, 'dist'),
     },
+    preset: './preset',
   },
 })

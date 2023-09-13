@@ -24,6 +24,13 @@ npx mage-wizard
 
 Open http://localhost:3000 in your browser.
 
+### Environment variables
+
+| Name   | Description       | Default value |
+|--------|-------------------|---------------|
+| `PORT` | Port to listen on | `3000`        |
+| `HOST` | Host to listen on | `127.0.0.1`   |
+
 ## Development
 
 ### Requirements

@@ -16,6 +16,7 @@
 /app.vue
 /nuxt.config.ts
 /pnpm-lock.yaml
+/preset
 /prettier.config.js
 /tsconfig.json
 /test.*
