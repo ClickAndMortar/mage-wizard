@@ -9,20 +9,20 @@
 ### Installing globally using npm
 
 ```shell
-npm install -g @clickandmortar/mage-wizard
+npm install -g mage-wizard
 
 mage-wizard
 ```
 
-Open `http://localhost:3000` in your browser.
+Open http://localhost:3000 in your browser.
 
 ### Using npx
 
 ```shell
-npx @clickandmortar/mage-wizard
+npx mage-wizard
 ```
 
-Open `http://localhost:3000` in your browser.
+Open http://localhost:3000 in your browser.
 
 ## Development
 
@@ -51,4 +51,4 @@ pnpm run dev
 * Remove `scripts` and `devDependencies` from `package.json`
 * Add `#!/usr/bin/env node` at the top of `dist/server/index.mjs` and make it executable (`chmod +x dist/server/index.mjs`)
 * `npm pack`
-* `npm publish`
+* `npm publish --access=public`

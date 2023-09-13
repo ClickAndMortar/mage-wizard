@@ -1,7 +1,7 @@
 {
-  "name": "@clickandmortar/mage-wizard",
+  "name": "mage-wizard",
   "description": "Web UI wizard for Magento 2 providing useful features: module creation, config management, etc.",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "bin": {
     "mage-wizard": "dist/server/index.mjs"
   },
