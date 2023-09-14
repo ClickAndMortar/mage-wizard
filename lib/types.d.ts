@@ -10,6 +10,10 @@ export type MageModule = {
   dependencies?: string[];
 }
 
+export type MageNewModule = Omit<MageModule, 'fqn' | 'relativePath' | 'enabled' | 'core' | 'vendor'> & {
+  fqn?: string;
+}
+
 export type MagePlugin = {
   module: MageModule;
   class: string;
@@ -187,4 +191,9 @@ export type NotificationType = 'success' | 'info' | 'warning' | 'error';
 export type MageWizardSettings = {
   version: string;
   path: string;
+}
+
+export type MageVersion = {
+  version: string;
+  eol: Date;
 }

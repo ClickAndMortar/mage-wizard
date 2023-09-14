@@ -1,8 +1,12 @@
 <template>
-  <VAlert> Welcome to Mage Wizard! </VAlert>
+  <VRow>
+    <VCol lg="4" md="6">
+      <MageDashboardVersion />
+    </VCol>
+  </VRow>
 </template>
 <script setup lang="ts">
   useHead({
-    title: 'Welcome',
+    title: 'Dashboard',
   })
 </script>

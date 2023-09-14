@@ -1,5 +1,5 @@
 <template>
-  <VForm @submit="createModule">
+  <VForm ref="form" @submit="createModule">
     <VCard elevation="3">
       <VCardTitle>
         <VRow>
@@ -16,41 +16,45 @@
       </VCardTitle>
       <VCardText class="mt-4">
         <VRow>
-          <VCol cols="4">
+          <VCol cols="3">
             <VTextField
               v-model="module.namespace"
               :rules="[() => !!module.namespace || 'Namespace is required']"
               label="Namespace"
               variant="outlined"
-              dense
-              required
               autofocus
             />
           </VCol>
-          <VCol cols="4">
-            <VTextField v-model="module.name" :rules="[() => !!module.name || 'Name is required']" label="Name" variant="outlined" dense required />
+          <VCol cols="3">
+            <VTextField v-model="module.name" :rules="[() => !!module.name || 'Name is required']" label="Name" variant="outlined" />
           </VCol>
-          <VCol cols="4">
-            <VTextField v-model="module.version" :rules="[() => !!module.version || 'Version is required']" label="Version" variant="outlined" dense required />
+          <VCol cols="3">
+            <VTextField v-model="module.version" :rules="[() => !!module.version || 'Version is required']" label="Version" variant="outlined" />
           </VCol>
-        </VRow>
-        <VRow>
-          <VCol> TODO: dependencies </VCol>
+          <VCol cols="3">
+            <VAutocomplete v-model="module.dependencies" label="Dependencies" chips multiple :items="moduleItems" variant="outlined" />
+          </VCol>
         </VRow>
       </VCardText>
     </VCard>
   </VForm>
 </template>
 <script setup lang="ts">
+  import { VForm } from 'vuetify/components'
+  import type { MageModule, MageNewModule } from '~/lib/types'
+
   useHead({
     title: 'Create module',
   })
 
-  const module = ref({
+  const module = ref<MageNewModule>({
     namespace: '',
     name: '',
-    version: '',
+    version: '1.0.0',
+    dependencies: [],
   })
+
+  const form = ref<VForm>()
 
   const creatingModule = ref(false)
 
@@ -60,8 +64,21 @@
     return modules.value?.some((module: any) => module.namespace === namespace && module.name === name)
   }
 
-  const createModule = (event: Event) => {
+  const moduleItems = computed(() => {
+    return modules.value?.map((module: MageModule) => module.fqn)
+  })
+
+  const createModule = async (event: Event) => {
     event.preventDefault()
+    if (!form.value) {
+      return
+    }
+
+    const { valid } = await form.value?.validate()
+
+    if (!valid) {
+      return
+    }
 
     if (moduleExists(module.value.namespace, module.value.name)) {
       useNotification().notify({
@@ -73,21 +90,28 @@
 
     creatingModule.value = true
 
-    fetch('/api/modules', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(module.value),
-    })
-      .then(() => {
-        navigateTo(`/modules/${module.value.namespace}_${module.value.name}`)
+    try {
+      await fetch('/api/modules', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(module.value),
       })
-      .catch((error) => {
-        alert(error)
+
+      useNotification().notify({
+        message: 'Module successfully created',
+        type: 'success',
       })
-      .finally(() => {
-        creatingModule.value = false
+
+      await navigateTo(`/modules/${module.value.namespace}_${module.value.name}`)
+    } catch (error) {
+      useNotification().notify({
+        message: `Failed to create module: ${error}`,
+        type: 'error',
       })
+    } finally {
+      creatingModule.value = false
+    }
   }
 </script>

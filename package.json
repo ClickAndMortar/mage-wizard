@@ -16,7 +16,12 @@
   },
   "homepage": "https://github.com/ClickAndMortar/mage-wizard",
   "license": "MIT",
-  "keywords": ["magento", "wizard", "adobe", "commerce"],
+  "keywords": [
+    "magento",
+    "wizard",
+    "adobe",
+    "commerce"
+  ],
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -29,6 +34,8 @@
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
+    "@types/luxon": "^3.3.2",
+    "@types/minimist": "^1.2.2",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -48,6 +55,8 @@
     "jsonpath": "^1.1.1",
     "jsonpath-plus": "^7.2.0",
     "lodash": "^4.17.21",
+    "luxon": "^3.4.3",
+    "minimist": "^1.2.8",
     "node-cache": "^5.1.2",
     "php-parser": "^3.1.5",
     "sass": "^1.66.1",

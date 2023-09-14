@@ -1,6 +1,6 @@
 <template>
   <div>
-    <VCard elevation="3">
+    <VCard>
       <VCardTitle>
         <VRow>
           <VCol cols="6">
@@ -10,6 +10,9 @@
             {{ moduleName }}
           </VCol>
           <VCol cols="6" class="text-right">
+            <VBtn icon flat class="mr-2" @click="refresh">
+              <VIcon>mdi-refresh</VIcon>
+            </VBtn>
             <VMenu>
               <template #activator="{ props }">
                 <VBtn color="primary" size="small" flat v-bind="props">Generate<VIcon end>mdi-menu-down</VIcon></VBtn>
@@ -26,6 +29,7 @@
                 <VListItem
                   prepend-icon="mdi-power-plug-outline"
                   value="new-plugin"
+                  disabled
                   :to="{ name: 'modules-name-new-command', params: { name: moduleName } }"
                   density="compact"
                 >
@@ -45,6 +49,18 @@
         </VRow>
       </VCardTitle>
     </VCard>
+    <VAlert v-if="!module.enabled" type="warning" class="mt-4">
+      <p class="mb-1 font-weight-medium">Module is currently disabled.</p>
+      <p class="mb-1">To enable it, you can either:</p>
+      <ul style="list-style-position: inside">
+        <li>
+          Add <code>{{ moduleName }}</code> to the <code>modules</code> array in <code>app/etc/config.php</code> and run <code>bin/magento setup:upgrade</code>
+        </li>
+        <li>
+          Run <code>bin/magento module:enable {{ moduleName }}</code>
+        </li>
+      </ul>
+    </VAlert>
     <VExpansionPanels variant="accordion" class="mt-4">
       <VExpansionPanel :disabled="config && configFieldCount === 0">
         <VExpansionPanelTitle>
@@ -83,6 +99,7 @@
 <script setup lang="ts">
   // eslint-disable-next-line import/default
   import jsonpath from 'jsonpath'
+  import type { MageModule } from '~/lib/types'
 
   const route = useRoute()
   const moduleName = route.params.name
@@ -91,14 +108,16 @@
     title: String(moduleName),
   })
 
-  const { data: module } = await useFetch(`/api/modules/${moduleName}`)
+  const refreshFlag = ref(false)
+
+  const { data: module, refresh: refreshModule } = await useFetch<MageModule>(`/api/modules/${moduleName}`)
   if (!module.value) {
     throw showError({ statusCode: 404, statusMessage: 'Module not found' })
   }
 
-  const { data: plugins, pending: pendingPlugins } = useFetch('/api/plugins', { query: { module: moduleName } })
-  const { data: commands, pending: pendingCommands } = useFetch('/api/commands', { query: { module: moduleName } })
-  const { data: config, pending: pendingConfig } = useFetch(`/api/modules/${moduleName}/config`)
+  const { data: plugins, pending: pendingPlugins, refresh: refreshPlugins } = useFetch('/api/plugins', { query: { module: moduleName } })
+  const { data: commands, pending: pendingCommands, refresh: refreshCommands } = useFetch('/api/commands', { query: { module: moduleName } })
+  const { data: config, pending: pendingConfig, refresh: refreshConfig } = useFetch(`/api/modules/${moduleName}/config`)
 
   const configFields = computed(() => {
     if (!config.value) {
@@ -116,4 +135,13 @@
 
     return configFields.value.length
   })
+
+  const refresh = () => {
+    refreshFlag.value = true
+    refreshModule()
+    refreshPlugins()
+    refreshCommands()
+    refreshConfig()
+    refreshFlag.value = false
+  }
 </script>

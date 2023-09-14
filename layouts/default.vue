@@ -5,13 +5,40 @@
         <VIcon size="40px">mdi-wizard-hat</VIcon>
       </div>
       <VList nav>
-        <VListItem prepend-icon="mdi-package-variant-closed" title="Modules" value="modules" :to="{ path: '/modules' }" tag="a" />
-        <VListItem prepend-icon="mdi-power-plug-outline" title="Plugins" value="plugins" :to="{ path: '/plugins' }" tag="a" />
-        <VListItem prepend-icon="mdi-console" title="Commands" value="commands" :to="{ path: '/commands' }" tag="a" />
+        <VListItem prepend-icon="mdi-view-dashboard" title="Dashboard" value="dashboard" :active="isPathActive('/', true)" :to="{ path: '/' }" tag="a" />
+        <VListItem
+          prepend-icon="mdi-package-variant-closed"
+          title="Modules"
+          value="modules"
+          :active="isPathActive('/modules')"
+          :to="{ path: '/modules' }"
+          tag="a"
+        />
+        <VListItem
+          prepend-icon="mdi-power-plug-outline"
+          title="Plugins"
+          value="plugins"
+          :active="isPathActive('/plugins')"
+          :to="{ path: '/plugins' }"
+          tag="a"
+        />
+        <VListItem prepend-icon="mdi-console" title="Commands" value="commands" :active="isPathActive('/commands')" :to="{ path: '/commands' }" tag="a" />
       </VList>
     </VNavigationDrawer>
 
     <VAppBar title="Mage Wizard" color="#3d3d3d">
+      <VAutocomplete
+        ref="moduleSearchInput"
+        v-model="module"
+        variant="outlined"
+        density="compact"
+        class="mt-5 mr-10"
+        placeholder="Search for a module"
+        :items="moduleItems"
+        style="max-width: 450px"
+        prepend-icon="mdi-magnify"
+        @update:model-value="goToModule"
+      />
       <VBtn icon :loading="loadingSettings" @click="() => (settingsDialog = !settingsDialog)">
         <VIcon>mdi-cog</VIcon>
       </VBtn>
@@ -65,8 +92,10 @@
   </VLayout>
 </template>
 <script setup lang="ts">
-  import { VForm } from 'vuetify/components'
-  import type { MageWizardSettings } from '~/lib/types'
+  import { VAutocomplete, VForm } from 'vuetify/components'
+  import type { MageWizardSettings, MageModule } from '~/lib/types'
+
+  const route = useRoute()
 
   useHead({
     titleTemplate: '%s - Mage Wizard',
@@ -97,6 +126,15 @@
 
     settings.value = remoteSettings.value
   })
+
+  const { data: modules } = await useFetch('/api/modules')
+
+  const moduleItems = computed(() => {
+    return modules.value?.map((module: MageModule) => module.fqn).sort((a: string, b: string) => a.localeCompare(b))
+  })
+
+  const module = ref('')
+  const moduleSearchInput = ref<VAutocomplete>()
 
   const requiredRule = (v: string) => !!v || 'This field is required'
 
@@ -162,4 +200,21 @@
       showSettingsPathValidationResult.value = false
     },
   )
+
+  const isPathActive = (path: string, exact = false) => {
+    if (exact) {
+      return route.path === path
+    }
+
+    return route.path.startsWith(path)
+  }
+
+  const goToModule = (name: string) => {
+    if (!name) {
+      return
+    }
+    module.value = ''
+    moduleSearchInput.value?.$forceUpdate()
+    navigateTo(`/modules/${name}`)
+  }
 </script>

@@ -26,8 +26,6 @@
               variant="outlined"
               hint="Example: mage-wizard:hello-world"
               persistent-hint
-              dense
-              required
               autofocus
             />
           </VCol>
@@ -37,12 +35,20 @@
               :rules="[() => !!command.description || 'Description is required']"
               label="Description"
               variant="outlined"
-              dense
-              required
             />
           </VCol>
           <VCol cols="4">
-            <VSelect v-model="command.injects" chips label="Injects" :items="injects" item-title="label" item-value="key" multiple variant="outlined" dense />
+            <VSelect
+              v-model="command.injects"
+              chips
+              label="Injects"
+              :items="injects"
+              item-title="label"
+              item-value="key"
+              multiple
+              variant="outlined"
+              disabled
+            />
           </VCol>
         </VRow>
       </VCardText>
@@ -58,11 +64,20 @@
     title: 'Create command',
   })
 
+  const moduleName = String(route.params.name)
+
+  // Convert moduleName from PascalCase to snake-case
+  const commandNamePrefix = moduleName
+    .replaceAll('_', ':')
+    .replaceAll(/([A-Z])/g, (match) => `-${match.toLowerCase()}`)
+    .replace(/^-/, '')
+    .replace(':-', ':')
+
   const command = ref({
-    name: '',
+    name: `${commandNamePrefix}:`,
     description: '',
     injects: [],
-    module: route.params.name,
+    module: moduleName,
   })
 
   const form = ref<VForm>()
@@ -74,12 +89,12 @@
 
   const nameRules = [
     (v: any) => !!v || 'Name is required',
-    (v: any) => (v && /^[\d:-_a-z]+$/.test(v)) || 'Name can only contain lowercase letters, numbers, dashes, colons, and underscores',
+    (v: any) => (v && /^[\d:_a-z-]+$/.test(v)) || 'Name can only contain lowercase letters, numbers, dashes, colons, and underscores',
   ]
 
   const creatingCommand = ref(false)
 
-  const { data: module } = await useFetch(`/api/modules/${route.params.name}`)
+  const { data: module } = await useFetch(`/api/modules/${moduleName}`)
 
   const createCommand = async (event: Event) => {
     event.preventDefault()
@@ -95,19 +110,19 @@
 
     creatingCommand.value = true
 
-    fetch(`/api/modules/${route.params.name}/command`, {
+    fetch(`/api/modules/${moduleName}/command`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(command.value),
     })
-      .then(() => {
+      .then(async () => {
         useNotification().notify({ message: 'Command successfully created', type: 'success' })
-        // navigateTo(`/modules/${module?.value?.fqn}`)
+        await navigateTo(`/modules/${moduleName}`)
       })
       .catch((error) => {
-        alert(error)
+        useNotification().notify({ message: `Failed to create command: ${error}`, type: 'error' })
       })
       .finally(() => {
         creatingCommand.value = false

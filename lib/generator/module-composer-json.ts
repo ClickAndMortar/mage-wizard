@@ -1,6 +1,6 @@
-import type { MageModule } from '~/lib/types'
+import type { MageModule, MageNewModule } from '~/lib/types'
 
-export default function (module: MageModule): string {
+export default function (module: MageModule | MageNewModule): string {
   const psr4Prefix = `${module.namespace}\\${module.name}\\`
 
   const snakeModuleName = module.name.replaceAll(/([\da-z])([A-Z])/g, '$1-$2').toLowerCase()

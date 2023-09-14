@@ -18,6 +18,7 @@ import type {
   MageNewCommand,
   MagePlugin,
   MageSystemConfigField,
+  MageNewModule,
 } from '../types'
 import parser from '../php-parser-engine'
 import generateComposerJson from '../generator/module-composer-json'
@@ -93,13 +94,13 @@ export const getModules = (refresh: boolean = false): MageModule[] => {
   return allModules
 }
 
-export const moduleExists = (module: MageModule): boolean => {
-  return allModules.some((m: MageModule) => {
+export const moduleExists = (module: MageModule | MageNewModule): boolean => {
+  return allModules.some((m: MageModule | MageNewModule) => {
     return m.name === module.name && m.namespace === module.namespace
   })
 }
 
-export const createModule = (module: MageModule): void => {
+export const createModule = (module: MageNewModule): void => {
   if (moduleExists(module)) {
     throw new Error('Module already exists')
   }
@@ -125,6 +126,7 @@ export const createCommand = (command: MageNewCommand): void => {
   const modulePath = `${getSettings()?.path}/${module.relativePath}`
 
   const commandClassName = command.name
+    .replace('-', '')
     .split(':')
     .map((part: string) => {
       return part.charAt(0).toUpperCase() + part.slice(1)
@@ -164,8 +166,6 @@ export const createCommand = (command: MageNewCommand): void => {
       name: `Magento\\Framework\\Console\\CommandListInterface`,
       arguments: [],
     }
-
-    diXml.types.push(commandListType)
   }
 
   if (!commandListType.arguments || commandListType.arguments.length === 0) {

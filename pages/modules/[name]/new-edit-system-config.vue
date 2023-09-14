@@ -84,7 +84,7 @@
         </VRow>
         <VRow>
           <VCol cols="4">
-            <VSelect v-model="config.type" :items="['text', 'textarea', 'select', 'multiselect', 'obscure']" label="Type" variant="outlined" />
+            <VSelect v-model="config.type" :items="['text', 'textarea', 'select', 'multiselect', 'obscure', 'label']" label="Type" variant="outlined" />
           </VCol>
           <VCol cols="4">
             <VSelect v-model="config.scopes" :items="scopeItems" item-value="key" item-title="label" label="Scopes" variant="outlined" multiple chips />
@@ -370,9 +370,9 @@
       },
       body: JSON.stringify(config.value),
     })
-      .then(() => {
+      .then(async () => {
         useNotification().notify({ message: `Config successfully ${editing ? 'updated' : 'created'}`, type: 'success' })
-        navigateTo(`/modules/${module?.value?.fqn}`)
+        await navigateTo(`/modules/${module?.value?.fqn}`)
       })
       .catch((error) => {
         useNotification().notify({ message: error.message, type: 'error' })
