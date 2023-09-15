@@ -146,6 +146,11 @@
             <VTextField v-model="config.default" label="Default value" variant="outlined" hint="Stored in etc/config.xml" />
           </VCol>
         </VRow>
+        <VRow>
+          <VCol cols="4">
+            <VTextField v-model="config.translate" label="Translate" variant="outlined" />
+          </VCol>
+        </VRow>
       </VCardText>
     </VCard>
   </VForm>
@@ -162,6 +167,7 @@
     MageSystemConfigSection,
     MageSystemConfigField,
   } from '~/lib/types'
+  import isValidPhpClassName from '~/lib/validator/php-class-name'
 
   const route = useRoute()
 
@@ -187,6 +193,7 @@
     resource: '',
     validators: [],
     default: '',
+    translate: 'label',
     module: String(route.params.name),
   })
 
@@ -220,14 +227,6 @@
     'validate-url',
     'validate-zero-or-greater',
   ]
-
-  const isValidPhpClassName = (name: string) => {
-    if (!name) {
-      return true
-    }
-
-    return /^[A-Z\\][\w\\]+[\dA-Za-z]$/.test(name)
-  }
 
   // TODO: add rule to check if value already exists
   const idRules = [
@@ -269,6 +268,7 @@
       config.value.default = configField.value.default
       config.value.sortOrder = configField.value.sortOrder || 0
       config.value.resource = configField.value.resource
+      config.value.translate = configField.value.translate
       config.value.scopes = []
       if (configField.value.showInDefault) {
         config.value.scopes.push('default')
@@ -358,12 +358,7 @@
 
     savingConfig.value = true
 
-    let endpoint = `/api/modules/${route.params.name}/config/field`
-    if (editing) {
-      endpoint += `?path=${route.query.path}`
-    }
-
-    fetch(endpoint, {
+    fetch(`/api/modules/${route.params.name}/config/field`, {
       method: editing ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -375,7 +370,7 @@
         await navigateTo(`/modules/${module?.value?.fqn}`)
       })
       .catch((error) => {
-        useNotification().notify({ message: error.message, type: 'error' })
+        useNotification().notify({ message: `Failed to ${editing ? 'update' : 'create'} config: ${error}`, type: 'error' })
       })
       .finally(() => {
         savingConfig.value = false

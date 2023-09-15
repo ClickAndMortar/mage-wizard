@@ -2,7 +2,7 @@
   <VLayout class="rounded rounded-md">
     <VNavigationDrawer color="#3d3d3d">
       <div class="text-center my-3">
-        <VIcon size="40px">mdi-wizard-hat</VIcon>
+        <VIcon size="40px" class="logo">mdi-wizard-hat</VIcon>
       </div>
       <VList nav>
         <VListItem prepend-icon="mdi-view-dashboard" title="Dashboard" value="dashboard" :active="isPathActive('/', true)" :to="{ path: '/' }" tag="a" />

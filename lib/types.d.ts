@@ -197,3 +197,36 @@ export type MageVersion = {
   version: string;
   eol: Date;
 }
+
+export type MageCrontabXmlJob = {
+  group: string;
+  name: string;
+  instance: string;
+  method: string;
+  schedule?: string;
+  configPath?: string;
+}
+
+export type MageCrontabXml = {
+  jobs: MageCrontabXmlJob[];
+}
+
+export type MageCrontabGroup = {
+  name: string;
+  jobCount: number;
+}
+
+export type MageCronGroupXmlGroup = {
+  id: string;
+  scheduleGenerateEvery?: number;
+  scheduleAheadFor?: number;
+  scheduleLifetime?: number;
+  historyCleanupEvery?: number;
+  historySuccessLifetime?: number;
+  historyFailureLifetime?: number;
+  useSeparateProcess?: number;
+}
+
+export type MageCronGroupXml = {
+  groups: MageCronGroupXmlGroup[];
+}

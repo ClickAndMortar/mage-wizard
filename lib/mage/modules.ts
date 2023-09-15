@@ -86,6 +86,7 @@ export const loadModules = (): void => {
   allModules = modules
 }
 
+// This method should take a param allowing to get modules ordered upon dependencies
 export const getModules = (refresh: boolean = false): MageModule[] => {
   if (allModules.length === 0 || refresh) {
     loadModules()

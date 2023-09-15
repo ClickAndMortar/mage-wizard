@@ -39,3 +39,11 @@ a {
     }
   }
 }
+
+.logo {
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    color: rgb(var(--v-theme-primary));
+  }
+}

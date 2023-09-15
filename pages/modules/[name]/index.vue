@@ -37,11 +37,19 @@
                 </VListItem>
                 <VListItem
                   prepend-icon="mdi-cog-outline"
-                  value="new-plugin"
+                  value="new-edit-system-config"
                   :to="{ name: 'modules-name-new-edit-system-config', params: { name: moduleName } }"
                   density="compact"
                 >
                   <VListItemTitle>System config</VListItemTitle>
+                </VListItem>
+                <VListItem
+                  prepend-icon="mdi-clock-outline"
+                  value="new-edit-crontab-job"
+                  :to="{ name: 'modules-name-new-edit-crontab-job', params: { name: moduleName } }"
+                  density="compact"
+                >
+                  <VListItemTitle>Crontab job</VListItemTitle>
                 </VListItem>
               </VList>
             </VMenu>
@@ -92,6 +100,16 @@
           <MageModuleCommands :commands="commands" />
         </VExpansionPanelText>
       </VExpansionPanel>
+      <VExpansionPanel :disabled="cronjobs && cronjobs.length === 0">
+        <VExpansionPanelTitle>
+          <strong>Cron jobs</strong>
+          <VChip v-if="!pendingCronjobs" size="small" class="ml-2">{{ cronjobs?.length || 0 }}</VChip>
+          <VProgressCircular v-if="pendingCronjobs" size="24" color="grey" indeterminate class="ml-2" />
+        </VExpansionPanelTitle>
+        <VExpansionPanelText>
+          <MageModuleCrontabJobs :jobs="cronjobs" :module="module" />
+        </VExpansionPanelText>
+      </VExpansionPanel>
     </VExpansionPanels>
   </div>
 </template>
@@ -118,6 +136,7 @@
   const { data: plugins, pending: pendingPlugins, refresh: refreshPlugins } = useFetch('/api/plugins', { query: { module: moduleName } })
   const { data: commands, pending: pendingCommands, refresh: refreshCommands } = useFetch('/api/commands', { query: { module: moduleName } })
   const { data: config, pending: pendingConfig, refresh: refreshConfig } = useFetch(`/api/modules/${moduleName}/config`)
+  const { data: cronjobs, pending: pendingCronjobs, refresh: refreshCronjobs } = useFetch(`/api/modules/${moduleName}/crontab/job`)
 
   const configFields = computed(() => {
     if (!config.value) {
@@ -142,6 +161,7 @@
     refreshPlugins()
     refreshCommands()
     refreshConfig()
+    refreshCronjobs()
     refreshFlag.value = false
   }
 </script>
