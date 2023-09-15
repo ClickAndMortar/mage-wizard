@@ -4,10 +4,10 @@ import Engine from 'php-parser'
 const parser = new Engine({
   parser: {
     extractDoc: false,
-    php7: true,
   },
   ast: {
     withPositions: false,
+    withSource: true,
   },
 })
 

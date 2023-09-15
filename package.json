@@ -34,6 +34,7 @@
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",
+    "@prettier/plugin-php": "^0.20.1",
     "@types/luxon": "^3.3.2",
     "@types/minimist": "^1.2.2",
     "eslint": "^8.48.0",
