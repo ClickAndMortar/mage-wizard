@@ -81,6 +81,11 @@
                 <VSelect v-model="settings.version" :items="magentoVersionItems" label="Magento version" variant="outlined" :rules="[requiredRule]" />
               </VCol>
             </VRow>
+            <VRow>
+              <VCol>
+                <VSelect v-model="settings.phpVersion" :items="phpVersions" label="PHP version" variant="outlined" :rules="[requiredRule]" />
+              </VCol>
+            </VRow>
           </VCardText>
           <VCardActions>
             <VSpacer />
@@ -94,6 +99,7 @@
 <script setup lang="ts">
   import { VAutocomplete, VForm } from 'vuetify/components'
   import type { MageWizardSettings, MageModule } from '~/lib/types'
+  import phpVersions from '~/lib/php-versions'
 
   const route = useRoute()
 
@@ -110,6 +116,7 @@
   const settings = ref<MageWizardSettings>({
     path: '',
     version: '',
+    phpVersion: '',
   })
 
   onBeforeMount(async () => {

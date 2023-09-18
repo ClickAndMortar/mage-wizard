@@ -3,5 +3,5 @@ import type { MageNewCommand } from '~/lib/types'
 
 export default defineEventHandler(async (event) => {
   const command: MageNewCommand = await readBody(event)
-  createCommand(command)
+  await createCommand(command)
 })

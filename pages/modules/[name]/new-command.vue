@@ -38,17 +38,7 @@
             />
           </VCol>
           <VCol cols="4">
-            <VSelect
-              v-model="command.injects"
-              chips
-              label="Injects"
-              :items="injects"
-              item-title="label"
-              item-value="key"
-              multiple
-              variant="outlined"
-              disabled
-            />
+            <VSelect v-model="command.injects" chips label="Injects" :items="injects" item-title="label" item-value="key" multiple variant="outlined" />
           </VCol>
         </VRow>
       </VCardText>

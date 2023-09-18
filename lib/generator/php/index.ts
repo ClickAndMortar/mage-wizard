@@ -1,4 +1,4 @@
-import type { Program, Declare, Namespace, Class, Method, Block, Call, ExpressionStatement, Return, Expression } from 'php-parser'
+import type { Program, Declare, Namespace, Class, Method, Block, ExpressionStatement, Expression } from 'php-parser'
 
 export const generatePhpFromAst = (ast: Program): string => {
   let output = `<?php\n\n`
@@ -95,7 +95,7 @@ const generateClassOutput = (node: Class): string => {
         }
         properties.push(property_)
       }
-      output += properties.join(', ') + ';\n'
+      output += properties.join(', ') + ';\n\n'
     }
   }
 
@@ -154,9 +154,13 @@ const generateMethodOutput = (node: Method): string => {
   return output
 }
 
-const generateMethodBodyOutput = (body: Block) => {
+const generateMethodBodyOutput = (body: Block | string) => {
   if (!body) {
     return ''
+  }
+
+  if (typeof body === 'string') {
+    return body
   }
 
   let output = ''

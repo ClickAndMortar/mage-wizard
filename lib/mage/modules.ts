@@ -122,7 +122,7 @@ export const createModule = (module: MageNewModule): void => {
   loadModules()
 }
 
-export const createCommand = (command: MageNewCommand): void => {
+export const createCommand = async (command: MageNewCommand): Promise<void> => {
   const module = getModule(command.module)
   const modulePath = `${getSettings()?.path}/${module.relativePath}`
 
@@ -137,7 +137,7 @@ export const createCommand = (command: MageNewCommand): void => {
   command.class = commandClassName
 
   fs.mkdirSync(`${modulePath}/Console/Command`, { recursive: true })
-  fs.writeFileSync(`${modulePath}/Console/Command/${commandClassName}.php`, generateCommand(module, command))
+  fs.writeFileSync(`${modulePath}/Console/Command/${commandClassName}.php`, await generateCommand(module, command))
 
   const diXmlPath = `${modulePath}/etc/di.xml`
   const diXml = getDiXml(module)
