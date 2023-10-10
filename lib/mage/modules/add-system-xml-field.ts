@@ -37,7 +37,7 @@ const convertNewFieldToConfigField = (newField: MageNewSystemConfigField): MageS
     label: newField.label,
     path: `${newField.section}/${newField.group}/${newField.id}`,
     type: newField.type,
-    comment: newField.comment,
+    comment: newField.comment || undefined,
     sortOrder: newField.sortOrder,
     showInStore: newField.scopes.includes('store'),
     showInWebsite: newField.scopes.includes('website'),

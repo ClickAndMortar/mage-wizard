@@ -43,7 +43,8 @@
     "eslint-plugin-sonarjs": "^0.21.0",
     "eslint-plugin-unicorn": "^48.0.1",
     "nuxt": "^3.7.0",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "@mdi/font": "^7.2.96",

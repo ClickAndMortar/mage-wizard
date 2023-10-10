@@ -47,6 +47,7 @@
 </template>
 <script setup lang="ts">
   import { VForm } from 'vuetify/components'
+  import type { MageModule } from '~/lib/types'
 
   const route = useRoute()
 
@@ -84,7 +85,7 @@
 
   const creatingCommand = ref(false)
 
-  const { data: module } = await useFetch(`/api/modules/${moduleName}`)
+  const { data: module } = await useFetch<MageModule>(`/api/modules/${moduleName}`)
 
   const createCommand = async (event: Event) => {
     event.preventDefault()

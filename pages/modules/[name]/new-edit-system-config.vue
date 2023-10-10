@@ -153,12 +153,40 @@
         </VRow>
       </VCardText>
     </VCard>
+    <VRow>
+      <VCol cols="6">
+        <VCard v-if="isNewSection" class="mt-4" elevation="3">
+          <VCardTitle>New section</VCardTitle>
+          <VCardText class="mt-2">
+            <VTextField v-model="config.section" readonly label="ID" variant="outlined" />
+            <VTextField v-model="section.label" label="Label" variant="outlined" />
+            <VTextField v-model="section.tab" label="Tab" variant="outlined" />
+            <VTextField v-model.number="section.sortOrder" type="number" label="Sort order" variant="outlined" />
+            <VSelect v-model="section.scopes" :items="scopeItems" item-value="key" item-title="label" label="Scopes" variant="outlined" multiple chips />
+            <VTextField v-model="section.resource" label="ACL Resource" variant="outlined" />
+          </VCardText>
+        </VCard>
+      </VCol>
+      <VCol cols="6">
+        <VCard v-if="isNewGroup" class="mt-4" elevation="3">
+          <VCardTitle>New group</VCardTitle>
+          <VCardText class="mt-2">
+            <VTextField v-model="config.group" readonly label="ID" variant="outlined" />
+            <VTextField v-model="group.label" label="Label" variant="outlined" />
+            <VTextField v-model.number="group.sortOrder" type="number" label="Sort order" variant="outlined" />
+            <VSelect v-model="group.scopes" :items="scopeItems" item-value="key" item-title="label" label="Scopes" variant="outlined" multiple chips />
+            <VTextField v-model="group.resource" label="ACL Resource" variant="outlined" />
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
   </VForm>
 </template>
 <script setup lang="ts">
   import { VForm } from 'vuetify/components'
   // eslint-disable-next-line import/named
   import { sortedUniqBy } from 'lodash'
+  import type { Ref } from 'vue'
   import type {
     MageModule,
     MageSystemConfig,
@@ -166,6 +194,8 @@
     MageSystemConfigGroup,
     MageSystemConfigSection,
     MageSystemConfigField,
+    MageNewSystemConfigSection,
+    MageNewSystemConfigGroup,
   } from '~/lib/types'
   import isValidPhpClassName from '~/lib/validator/php-class-name'
 
@@ -177,7 +207,7 @@
     title: `${editing ? 'Edit' : 'Create'} config`,
   })
 
-  const config: Ref<MageNewSystemConfigField> = ref({
+  const configObject: MageNewSystemConfigField = {
     id: '',
     type: 'text',
     section: '',
@@ -195,6 +225,26 @@
     default: '',
     translate: 'label',
     module: String(route.params.name),
+  }
+
+  const config: Ref<MageNewSystemConfigField> = ref(Object.assign({}, configObject))
+
+  const section = ref<MageNewSystemConfigSection>({
+    id: '',
+    label: '',
+    tab: '',
+    sortOrder: 0,
+    scopes: ['default'],
+    resource: '',
+  })
+
+  const group = ref<MageNewSystemConfigGroup>({
+    id: '',
+    section: '',
+    label: '',
+    sortOrder: 0,
+    scopes: ['default'],
+    resource: '',
   })
 
   const scopeItems = [
@@ -356,18 +406,68 @@
       return
     }
 
+    if (isNewSection) {
+      section.value.id = config.value.section
+    }
+
+    if (isNewGroup) {
+      group.value.id = config.value.group
+      group.value.section = config.value.section
+    }
+
     savingConfig.value = true
 
-    fetch(`/api/modules/${route.params.name}/config/field`, {
-      method: editing ? 'PUT' : 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(config.value),
-    })
+    const promises = []
+
+    if (isNewSection.value) {
+      promises.push(
+        fetch(`/api/modules/${route.params.name}/config/section`, {
+          method: editing ? 'PUT' : 'POST', // TODO: change this
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(section.value),
+        }),
+      )
+    }
+
+    if (isNewGroup.value) {
+      promises.push(
+        fetch(`/api/modules/${route.params.name}/config/group`, {
+          method: editing ? 'PUT' : 'POST', // TODO: change this
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(group.value),
+        }),
+      )
+    }
+
+    promises.push(
+      fetch(`/api/modules/${route.params.name}/config/field`, {
+        method: editing ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config.value),
+      }),
+    )
+
+    Promise.all(promises)
       .then(async () => {
         useNotification().notify({ message: `Config successfully ${editing ? 'updated' : 'created'}`, type: 'success' })
-        await navigateTo(`/modules/${module?.value?.fqn}`)
+
+        if (editing) {
+          await navigateTo(`/modules/${String(route.params.name)}`)
+        }
+
+        const newConfigObject = Object.assign({}, configObject)
+        newConfigObject.section = config.value.section
+        newConfigObject.group = config.value.group
+        newConfigObject.sortOrder = config.value.sortOrder + 10
+        config.value = newConfigObject
+
+        form.value?.resetValidation()
       })
       .catch((error) => {
         useNotification().notify({ message: `Failed to ${editing ? 'update' : 'create'} config: ${error}`, type: 'error' })

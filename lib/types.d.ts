@@ -53,6 +53,10 @@ export type MageSystemConfigSection = {
   // TODO: handle file path (many system.xml files possible)
 }
 
+export type MageNewSystemConfigSection = Omit<MageSystemConfigSection, 'groups' | 'showInWebsite' | 'showInStore' | 'showInDefault'> & {
+  scopes: string[];
+}
+
 export type MageSystemConfigGroup = {
   id: string;
   label?: string;
@@ -68,6 +72,11 @@ export type MageSystemConfigGroup = {
   resource?: string;
   // TODO: many more options as child attributes + handle file path (many system.xml files possible)
   fields: MageSystemConfigField[];
+}
+
+export type MageNewSystemConfigGroup = Omit<MageSystemConfigGroup, 'fields' | 'showInWebsite' | 'showInStore' | 'showInDefault'> & {
+  section: string;
+  scopes: string[];
 }
 
 export type MageSystemConfigField = {

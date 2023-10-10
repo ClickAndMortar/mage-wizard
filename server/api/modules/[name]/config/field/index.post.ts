@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const systemConfig = addSystemXmlField(field, config)
   writeSystemXml(systemConfig, getModule(field.module))
 
-  if (field.default !== undefined) {
+  if (field.default !== undefined && field.default !== '') {
     const configXml = getConfigXml(getModule(field.module))
     const updatedXml = setConfigXmlValue(field, configXml)
     writeConfigXml(updatedXml, getModule(field.module))
