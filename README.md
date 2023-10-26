@@ -19,7 +19,7 @@ Open http://localhost:3000 in your browser.
 ### Using npx
 
 ```shell
-npx mage-wizard
+npx mage-wizard@latest
 ```
 
 Open http://localhost:3000 in your browser.
