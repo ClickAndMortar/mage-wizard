@@ -61,7 +61,7 @@ export default function (program: PhpProgram): any {
             name: phpClass.getExtend(),
           }
         : null,
-      implements: phpClass.getImplement().length > 0 ? phpClass.getImplement()?.map((name) => ({ kind: 'identifier', name })) : undefined,
+      implements: phpClass.getImplement().length > 0 ? phpClass.getImplement()?.map((name) => ({ kind: 'name', name, resolution: 'uqn' })) : undefined,
       body: [],
     }
 

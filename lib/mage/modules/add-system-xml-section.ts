@@ -18,6 +18,7 @@ const convertNewSectionToConfigSection = (newSection: MageNewSystemConfigSection
   return {
     id: newSection.id,
     label: newSection.label,
+    tab: newSection.tab,
     sortOrder: newSection.sortOrder,
     showInStore: newSection.scopes.includes('store'),
     showInWebsite: newSection.scopes.includes('website'),

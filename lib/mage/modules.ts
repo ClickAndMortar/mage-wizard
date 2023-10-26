@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { XMLBuilder, XMLParser } from 'fast-xml-parser'
-// eslint-disable-next-line import/default
+
 import jsonpath from 'jsonpath'
 import fg from 'fast-glob'
 import type {
@@ -19,12 +19,14 @@ import type {
   MagePlugin,
   MageSystemConfigField,
   MageNewModule,
+  MageNewPatch,
 } from '../types'
 import parser from '../php-parser-engine'
 import generateComposerJson from '../generator/module-composer-json'
 import generateRegistrationPhp from '../generator/module-registration-php'
 import generateModuleXml from '../generator/module-module-xml'
 import generateCommand from '../generator/module-command'
+import generatePatch from '../generator/module-patch'
 import getConfigXml from '~/lib/mage/modules/get-config-xml'
 import getSettings from '~/lib/settings'
 
@@ -122,12 +124,32 @@ export const createModule = (module: MageNewModule): void => {
   loadModules()
 }
 
+export const createPatch = async (module: MageModule, patch: MageNewPatch): Promise<void> => {
+  const modulePath = `${getSettings()?.path}/${module.relativePath}`
+  const patchName = patch.name
+    .replaceAll('-', '')
+    .split(':')
+    .map((part: string) => {
+      return part.charAt(0).toUpperCase() + part.slice(1)
+    })
+    .join('')
+
+  patch.className = `${patchName}Patch`
+
+  let patchDirectory = ''
+  patchDirectory = patch.type === 'data' ? `${modulePath}/Setup/Patch/Data` : `${modulePath}/Setup/Patch/Schema`
+
+  fs.mkdirSync(patchDirectory, { recursive: true })
+
+  fs.writeFileSync(`${patchDirectory}/${patch.className}.php`, await generatePatch(module, patch))
+}
+
 export const createCommand = async (command: MageNewCommand): Promise<void> => {
   const module = getModule(command.module)
   const modulePath = `${getSettings()?.path}/${module.relativePath}`
 
   const commandClassName = command.name
-    .replace('-', '')
+    .replaceAll('-', '')
     .split(':')
     .map((part: string) => {
       return part.charAt(0).toUpperCase() + part.slice(1)

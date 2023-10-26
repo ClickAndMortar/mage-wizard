@@ -12,6 +12,9 @@
             {{ editing ? 'Edit' : 'Create' }} config
           </VCol>
           <VCol cols="8" class="text-right">
+            <VBtn color="#e1e1e1" flat size="small" :loading="savingConfig" class="mr-4" @click.prevent="saveConfigAndContinue"
+              >{{ editing ? 'Update' : 'Create' }} config and continue</VBtn
+            >
             <VBtn color="success" flat size="small" type="submit" :loading="savingConfig">{{ editing ? 'Update' : 'Create' }} config</VBtn>
           </VCol>
         </VRow>
@@ -140,7 +143,7 @@
             <VTextField v-model="config.resource" label="ACL Resource" variant="outlined" />
           </VCol>
           <VCol cols="4">
-            <VTextField v-model="config.sortOrder" type="number" label="Sort order" variant="outlined" />
+            <VTextField v-model.number="config.sortOrder" type="number" label="Sort order" variant="outlined" />
           </VCol>
           <VCol cols="4">
             <VTextField v-model="config.default" label="Default value" variant="outlined" hint="Stored in etc/config.xml" />
@@ -235,7 +238,7 @@
     tab: '',
     sortOrder: 0,
     scopes: ['default'],
-    resource: '',
+    resource: `${route.params.name}::system_config`,
   })
 
   const group = ref<MageNewSystemConfigGroup>({
@@ -298,7 +301,7 @@
   const groupFocused = ref(false)
 
   const { data: module } = await useFetch<MageModule>(`/api/modules/${route.params.name}`)
-  const { data: moduleConfigs } = await useFetch<MageSystemConfig[]>(`/api/modules/system-config`)
+  const { data: moduleConfigs, refresh: refreshModuleConfigs } = await useFetch<MageSystemConfig[]>(`/api/modules/system-config`)
 
   if (editing) {
     const { data: configField } = await useFetch<MageSystemConfigField>(`/api/modules/${route.params.name}/config/field?path=${route.query.path}`)
@@ -394,7 +397,11 @@
 
   watch(() => config.value.type, onTypeChange)
 
-  const saveConfig = async (event: Event) => {
+  const saveConfigAndContinue = async (event: Event) => {
+    await saveConfig(event, true)
+  }
+
+  const saveConfig = async (event: Event, continue_: boolean = false) => {
     event.preventDefault()
     if (!form.value) {
       return
@@ -457,9 +464,11 @@
       .then(async () => {
         useNotification().notify({ message: `Config successfully ${editing ? 'updated' : 'created'}`, type: 'success' })
 
-        if (editing) {
+        if (editing || !continue_) {
           await navigateTo(`/modules/${String(route.params.name)}`)
         }
+
+        await refreshModuleConfigs()
 
         const newConfigObject = Object.assign({}, configObject)
         newConfigObject.section = config.value.section

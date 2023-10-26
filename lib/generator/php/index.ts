@@ -67,7 +67,7 @@ const generateClassOutput = (node: Class): string => {
   }
   if (node.implements) {
     // @ts-ignore
-    output += ` implements ${node.implements.name}`
+    output += ` implements ${node.implements.map((implement) => implement.name).join(', ')}`
   }
   output += `\n{\n`
 
@@ -106,7 +106,7 @@ const generateClassOutput = (node: Class): string => {
 
 const generateMethodOutput = (node: Method): string => {
   // @ts-ignore
-  let output = `${node.visibility} ${node.readonly ? 'readonly ' : ''}function ${node.name.name}(`
+  let output = `${node.visibility} ${node.readonly ? 'readonly ' : ''}${node.isStatic ? 'static ' : ''}function ${node.name.name}(`
 
   const arguments_ = []
   for (const argument of node.arguments) {

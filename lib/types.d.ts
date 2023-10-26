@@ -133,6 +133,14 @@ export type MageNewCommand = {
   class?: string;
 }
 
+export type MagePatchType = 'data'|'schema';
+
+export type MageNewPatch = {
+  name: string;
+  className?: string;
+  type: MagePatchType;
+}
+
 // export type MageNewCommand = Omit<'module', MageCommand>
 
 export type MageDiXmlTypeArgumentItem = {

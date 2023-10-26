@@ -51,6 +51,14 @@
                 >
                   <VListItemTitle>Crontab job</VListItemTitle>
                 </VListItem>
+                <VListItem
+                  prepend-icon="mdi-bandage"
+                  value="new-patch"
+                  :to="{ name: 'modules-name-new-patch', params: { name: moduleName } }"
+                  density="compact"
+                >
+                  <VListItemTitle>Patch</VListItemTitle>
+                </VListItem>
               </VList>
             </VMenu>
           </VCol>
@@ -115,7 +123,6 @@
 </template>
 
 <script setup lang="ts">
-  // eslint-disable-next-line import/default
   import jsonpath from 'jsonpath'
   import type { MageModule } from '~/lib/types'
 
